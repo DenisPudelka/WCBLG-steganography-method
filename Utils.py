@@ -1,7 +1,6 @@
 import pywt
-from math import floor, ceil
 import numpy as np
-import random
+import mylibpkg
 
 def string_to_bin(data):
     return ''.join(format(ord(i), '08b') for i in data)
@@ -12,12 +11,21 @@ def bin_to_string(binary):
         binary_str += str(int(item))
     return ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
 
+def DWT_version_2(coverk):
+    eng = mylibpkg.initialize()
+    dwt_result = eng.perform_dwt(coverk, 'haar')
+    LL = np.array(dwt_result[0])
+    LH = np.array(dwt_result[1])
+    HL = np.array(dwt_result[2])
+    HH = np.array(dwt_result[3])
+    eng.terminate()
+    return LL, LH, HL, HH
+
 def DWT(coverk):
     coeffs2 = pywt.dwt2(coverk, 'db2')
     LL, (LH, HL, HH) = coeffs2
     #HH = HH.astype(int)
     return LL, LH, HL, HH
-
 
 def IDWT(LL, LH, HL, HH):
     coeffs = (LL, (LH, HL, HH))
