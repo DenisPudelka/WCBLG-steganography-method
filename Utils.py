@@ -27,6 +27,13 @@ def DWT(coverk):
     #HH = HH.astype(int)
     return LL, LH, HL, HH
 
+def IDWT_version_2(LL, LH, HL, HH):
+    eng = mylibpkg.initialize()
+    dwt_result = eng.perform_idwt(LL,LH,HL,HH,'haar')
+    reconstructed_image = np.array(dwt_result)
+    eng.terminate()
+    return reconstructed_image
+
 def IDWT(LL, LH, HL, HH):
     coeffs = (LL, (LH, HL, HH))
     idwt_result = pywt.idwt2(coeffs, 'db2')
@@ -34,6 +41,8 @@ def IDWT(LL, LH, HL, HH):
     #idwt_result = np.clip(np.round(idwt_result), 0, 255).astype(np.uint8)
 
     return idwt_result
+
+
 
 def DWT_(image):
     """Apply lifting wavelet transform on a 2D image."""
