@@ -4,14 +4,14 @@ import numpy as np
 import Utils
 import matplotlib.pyplot as plt
 
-image = tifffile.imread("original_images/tank_color.tiff")
+image = tifffile.imread("original_images/baboon_color.tiff")
 
 if image.dtype != np.uint8:
     image = image.astype(np.uint8)
 
 eng = mylibpkg.initialize()
-#image_gray_matlab = eng.convert_rgb_to_gray(image)
-image_gray = np.array(image)
+mage_gray_matlab = eng.convert_rgb_to_gray(image)
+image_gray = np.array(mage_gray_matlab)
 eng.terminate()
 
 LL, LH, HL, HH = Utils.IWT_version_2(image_gray)
