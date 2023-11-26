@@ -24,7 +24,6 @@ def DWT_version_2(coverk):
 def DWT(coverk):
     coeffs2 = pywt.dwt2(coverk, 'db2')
     LL, (LH, HL, HH) = coeffs2
-    #HH = HH.astype(int)
     return LL, LH, HL, HH
 
 def IDWT_version_2(LL, LH, HL, HH):
@@ -37,28 +36,22 @@ def IDWT_version_2(LL, LH, HL, HH):
 def IDWT(LL, LH, HL, HH):
     coeffs = (LL, (LH, HL, HH))
     idwt_result = pywt.idwt2(coeffs, 'db2')
-    #idwt_result = np.clip(np.round(idwt_result), 0, 255).astype(np.uint8)
     return idwt_result
 
 def IWT_version_2(coverk):
     eng = mylibpkg.initialize()
     iwt_result = eng.perform_iwt(coverk, 'haar', 1)
     LL = np.array(iwt_result[0])
-
     LH = np.array(iwt_result[1][0])
     HL = np.array(iwt_result[2][0])
     HH = np.array(iwt_result[3][0])
-
     eng.terminate()
     return LL, LH, HL, HH
 
 def IIWT_version_2(LL, LH, HL, HH):
     eng = mylibpkg.initialize()
-
-    # Pass numpy arrays directly, without squeezing
     iiwt_result = eng.perform_iiwt_version2(LL, LH, HL, HH, 'haar', 0)
     reconstructed_image = np.array(iiwt_result)
-
     eng.terminate()
     return reconstructed_image
 
