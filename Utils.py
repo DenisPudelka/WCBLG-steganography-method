@@ -11,6 +11,30 @@ def bin_to_string(binary):
         binary_str += str(int(item))
     return ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
 
+def color_to_gray_matlab(image):
+    eng = mylibpkg.initialize()
+    image_matlab_gray = eng.convert_rgb_to_gray(image)
+    image_gray = np.array(image_matlab_gray)
+    eng.terminate()
+    return image_gray
+
+def convert_image_to_datatype_matlab(image, data_type):
+    # uint8, uint16, single, double
+    eng = mylibpkg.initialize()
+    image_matlab_converted = eng.convert_image_to_datatype(image, data_type)
+    image_converted = np.array(image_matlab_converted)
+    eng.terminate()
+    return image_converted
+
+def convert_image_datatype(image, data_type):
+    # np.uint8, np.uint16, np.int8, np.int16, np.float32, np.float64
+    if image.dtype != data_type:
+        return image.astype(data_type)
+    return image
+
+def save_image():
+    pass
+
 def DWT_version_2(coverk):
     eng = mylibpkg.initialize()
     dwt_result = eng.perform_dwt(coverk, 'haar')
