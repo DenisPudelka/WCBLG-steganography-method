@@ -104,7 +104,8 @@ def IDWT(LL, LH, HL, HH):
     return idwt_result
 
 def IWT_version_2(coverk, eng):
-    iwt_result = eng.perform_iwt(coverk, 'haar', 1)
+    coverk_contiguous = np.ascontiguousarray(coverk)
+    iwt_result = eng.perform_iwt(coverk_contiguous, 'haar', 1)
     LL = np.array(iwt_result[0])
     LH = np.array(iwt_result[1][0])
     HL = np.array(iwt_result[2][0])

@@ -38,7 +38,7 @@ class GeneticAlgorithm:
             pop_dict = {key: 0 for key in self.pop}
             self.fitness_population(pop_dict)
             self.pop = self.selection(pop_dict)
-            cProfile.runctx('self.fitness_population(pop_dict)', globals(), locals())
+            #cProfile.runctx('self.fitness_population(pop_dict)', globals(), locals())
 
         return self.pop[0]
 
@@ -95,6 +95,7 @@ class GeneticAlgorithm:
     def fitness(self, chromo):
         HHS = embedding(self.HH, self.HHprim, self.can_loc, chromo, self.data_k, self.mul, self.HH_keys)
         stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+        #stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
         return self.picture_fitness(self.cover_k, stego_k)
 
     def picture_fitness(self, cover, stego_image):

@@ -1,4 +1,5 @@
 from random import *
+import random
 from random import seed
 import math
 from Utils import *
@@ -41,6 +42,7 @@ class WCBLGExtraction:
 
                 # Wavelet transformation
                 self.LL, self.LH, self.HL, self.HHS = DWT_version_2(self.stego_k, self.eng)
+                #self.LL, self.LH, self.HL, self.HHS = IWT_version_2(self.stego_k, self.eng)
 
                 # Selection of Embeding Location
                 self.selEmbLoc()

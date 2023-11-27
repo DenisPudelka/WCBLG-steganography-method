@@ -11,12 +11,15 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
     # convert image to grayscale
     cover_image = color_to_gray_matlab(image_original, eng)
 
+    # convert image to different datatype
+    cover_image = convert_image_to_datatype_matlab(cover_image, "double", eng)
+
     # read message
-    data = read_message("message/Lorem Ipsum 100B.txt")
+    data = read_message("message/Lorem Ipsum 500B.txt")
 
     # calling embedding algorithm
     wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng)
-    bestSeeds, stego_image, tags = wcblgEmbedding.wcblg()
+    bestSeeds, stego_image = wcblgEmbedding.wcblg()
     print(bestSeeds)
 
     # save seeds, cover image and stego image
@@ -33,7 +36,7 @@ def decrypt(key, Bs, mul, eng):
     bestSeeds = read_seeds_from_file("seeds_1.txt")
 
     # read message and get length in bin
-    data = read_message("message/Lorem Ipsum 100B.txt")
+    data = read_message("message/Lorem Ipsum 500B.txt")
     data_bin = string_to_bin(data)
 
     # calling extraction algorithm

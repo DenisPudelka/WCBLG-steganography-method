@@ -45,7 +45,7 @@ class WCBLGAlgorithm:
         block_number = NumRows * NumCols
 
         L = len(data_bin)
-        self.len_data = L // (NumRows * NumCols)  # if numbers are not divisible , reminder will be lost which means part of message is not embeded, or we fill message with spaces
+        self.len_data = L // (block_number)  # if numbers are not divisible , reminder will be lost which means part of message is not embeded, or we fill message with spaces
 
         k = 1
         self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype) # tu mozno dam dtype=image.dtype
@@ -55,8 +55,9 @@ class WCBLGAlgorithm:
                 # Extrakcia blokova
                 self.GetSubBl(data_bin, i, j, k)
 
-                # DWT transformacija
+                # DWT or IWT transformacija
                 self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k, self.eng)
+                #self.LL, self.LH, self.HL, self.HH = IWT_version_2(self.cover_k, self.eng)
 
                 # selekcija lokacije za embedovanje
                 self.SelEmbLoc()
@@ -71,12 +72,13 @@ class WCBLGAlgorithm:
                 # Embedovanje data
                 HHS = embedding(self.HH, self.HHprim, self.can_loc, bestseedk, self.data_k, self.mul, self.HH_keys)
 
-                # IDWT transformacija
+                # IDWT or IIWT transformacija
                 stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+                #stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
 
                 # Spajanje blokova
                 self.SetSubBl(stego_k, i, j)
-                print('jedna iteracija')
+                print('Iteracija: ', k)
                 k += 1
 
         return BestSeeds, self.stego_image
