@@ -10,8 +10,8 @@ if image.dtype != np.uint8:
     image = image.astype(np.uint8)
 
 eng = mylibpkg.initialize()
-#image_gray_matlab = eng.convert_rgb_to_gray(image)
-image_gray = np.array(image)
+image_gray_matlab = eng.convert_rgb_to_gray(image)
+image_gray = np.array(image_gray_matlab)
 eng.terminate()
 
 LL, LH, HL, HH = Utils.IWT_version_2(image_gray)
