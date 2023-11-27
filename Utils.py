@@ -46,17 +46,17 @@ def save_image(image, file_path):
     }
     tifffile.imwrite(file_path, image, **tags)
 
-def write_seeds_to_file(seeds, directory='seeds_keys'):
+def write_seeds_to_file(seeds, file_name, directory='seeds_keys'):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    file_path = os.path.join(directory, 'seeds.txt')
+    file_path = os.path.join(directory, file_name)
 
     with open(file_path, 'w') as file:
         file.write('\n'.join(str(seed) for seed in seeds))
 
-def read_seeds_from_file(directory='seeds_keys'):
-    file_path = os.path.join(directory, 'seeds.txt')
+def read_seeds_from_file(file_name, directory='seeds_keys'):
+    file_path = os.path.join(directory, file_name)
 
     if not os.path.exists(file_path):
         return []
@@ -67,9 +67,22 @@ def read_seeds_from_file(directory='seeds_keys'):
     seeds = [int(line.strip()) for line in lines if line.strip()]
     return seeds
 
+def read_message(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            message = file.read()
+        return message
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 def DWT_version_2(coverk):
     eng = mylibpkg.initialize()
-    dwt_result = eng.perform_dwt(coverk, 'haar')
+    coverk_contiguous = np.ascontiguousarray(coverk)
+    dwt_result = eng.perform_dwt(coverk_contiguous, 'haar')
     LL = np.array(dwt_result[0])
     LH = np.array(dwt_result[1])
     HL = np.array(dwt_result[2])
@@ -84,7 +97,11 @@ def DWT(coverk):
 
 def IDWT_version_2(LL, LH, HL, HH):
     eng = mylibpkg.initialize()
-    idwt_result = eng.perform_idwt(LL,LH,HL,HH,'haar')
+    LL_contiguous = np.ascontiguousarray(LL)
+    LH_contiguous = np.ascontiguousarray(LH)
+    HL_contiguous = np.ascontiguousarray(HL)
+    HH_contiguous = np.ascontiguousarray(HH)
+    idwt_result = eng.perform_idwt(LL_contiguous, LH_contiguous, HL_contiguous, HH_contiguous, 'haar')
     reconstructed_image = np.array(idwt_result)
     eng.terminate()
     return reconstructed_image
