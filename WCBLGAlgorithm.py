@@ -11,7 +11,7 @@ import tifffile
 
 
 class WCBLGAlgorithm:
-    def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch):
+    def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch, eng):
         self.cover_image = cover_path
         self.stego_image = None
         self.data = data
@@ -32,6 +32,7 @@ class WCBLGAlgorithm:
         self.cover_k = None
         self.data_k = None
         self.HH_keys = {}
+        self.eng = eng
 
 
     def wcblg(self):
@@ -55,7 +56,7 @@ class WCBLGAlgorithm:
                 self.GetSubBl(data_bin, i, j, k)
 
                 # DWT transformacija
-                self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k)
+                self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k, self.eng)
 
                 # selekcija lokacije za embedovanje
                 self.SelEmbLoc()
@@ -63,7 +64,7 @@ class WCBLGAlgorithm:
                 # GA
                 genericAlgorithm = GeneticAlgorithm(self.n_pop, self.pc, self.pm, self.epoch, self.can_loc,
                                                     self.cover_k, self.LL, self.LH, self.HL, self.HH, self.HHprim,
-                                                    self.data_k, self.mul, self.key, self.HH_keys)
+                                                    self.data_k, self.mul, self.key, self.HH_keys, self.eng)
                 bestseedk = genericAlgorithm.findBestKey()
                 BestSeeds.append(bestseedk)
 
@@ -71,7 +72,7 @@ class WCBLGAlgorithm:
                 HHS = embedding(self.HH, self.HHprim, self.can_loc, bestseedk, self.data_k, self.mul, self.HH_keys)
 
                 # IDWT transformacija
-                stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS)
+                stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
 
                 # Spajanje blokova
                 self.SetSubBl(stego_k, i, j)

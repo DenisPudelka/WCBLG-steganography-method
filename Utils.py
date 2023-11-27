@@ -13,19 +13,15 @@ def bin_to_string(binary):
         binary_str += str(int(item))
     return ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
 
-def color_to_gray_matlab(image):
-    eng = mylibpkg.initialize()
+def color_to_gray_matlab(image, eng):
     image_matlab_gray = eng.convert_rgb_to_gray(image)
     image_gray = np.array(image_matlab_gray)
-    eng.terminate()
     return image_gray
 
-def convert_image_to_datatype_matlab(image, data_type):
+def convert_image_to_datatype_matlab(image, data_type, eng):
     # uint8, uint16, single, double
-    eng = mylibpkg.initialize()
     image_matlab_converted = eng.convert_image_to_datatype(image, data_type)
     image_converted = np.array(image_matlab_converted)
-    eng.terminate()
     return image_converted
 
 def convert_image_datatype(image, data_type):
@@ -79,15 +75,13 @@ def read_message(file_path):
         print(f"An error occurred: {e}")
         return None
 
-def DWT_version_2(coverk):
-    eng = mylibpkg.initialize()
+def DWT_version_2(coverk, eng):
     coverk_contiguous = np.ascontiguousarray(coverk)
     dwt_result = eng.perform_dwt(coverk_contiguous, 'haar')
     LL = np.array(dwt_result[0])
     LH = np.array(dwt_result[1])
     HL = np.array(dwt_result[2])
     HH = np.array(dwt_result[3])
-    eng.terminate()
     return LL, LH, HL, HH
 
 def DWT(coverk):
@@ -95,15 +89,13 @@ def DWT(coverk):
     LL, (LH, HL, HH) = coeffs2
     return LL, LH, HL, HH
 
-def IDWT_version_2(LL, LH, HL, HH):
-    eng = mylibpkg.initialize()
+def IDWT_version_2(LL, LH, HL, HH, eng):
     LL_contiguous = np.ascontiguousarray(LL)
     LH_contiguous = np.ascontiguousarray(LH)
     HL_contiguous = np.ascontiguousarray(HL)
     HH_contiguous = np.ascontiguousarray(HH)
     idwt_result = eng.perform_idwt(LL_contiguous, LH_contiguous, HL_contiguous, HH_contiguous, 'haar')
     reconstructed_image = np.array(idwt_result)
-    eng.terminate()
     return reconstructed_image
 
 def IDWT(LL, LH, HL, HH):
@@ -111,20 +103,16 @@ def IDWT(LL, LH, HL, HH):
     idwt_result = pywt.idwt2(coeffs, 'db2')
     return idwt_result
 
-def IWT_version_2(coverk):
-    eng = mylibpkg.initialize()
+def IWT_version_2(coverk, eng):
     iwt_result = eng.perform_iwt(coverk, 'haar', 1)
     LL = np.array(iwt_result[0])
     LH = np.array(iwt_result[1][0])
     HL = np.array(iwt_result[2][0])
     HH = np.array(iwt_result[3][0])
-    eng.terminate()
     return LL, LH, HL, HH
 
-def IIWT_version_2(LL, LH, HL, HH):
-    eng = mylibpkg.initialize()
+def IIWT_version_2(LL, LH, HL, HH, eng):
     iiwt_result = eng.perform_iiwt_version2(LL, LH, HL, HH, 'haar', 0)
     reconstructed_image = np.array(iiwt_result)
-    eng.terminate()
     return reconstructed_image
 

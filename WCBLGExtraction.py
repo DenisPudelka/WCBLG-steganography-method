@@ -5,7 +5,7 @@ from Utils import *
 
 
 class WCBLGExtraction:
-    def __init__(self, stego_image, key, bs, mul, best_seed, l):
+    def __init__(self, stego_image, key, bs, mul, best_seed, l, eng):
         self.stego_image = stego_image
         self.key = key
         self.bs = bs
@@ -23,6 +23,7 @@ class WCBLGExtraction:
         self.data_k = None
         self.data = np.zeros(l)
         self.message = None
+        self.eng = eng
 
     def extract_data(self):
         m, n = self.stego_image.shape
@@ -39,7 +40,7 @@ class WCBLGExtraction:
                 self.getSubBl(i, j)
 
                 # Wavelet transformation
-                self.LL, self.LH, self.HL, self.HHS = DWT_version_2(self.stego_k)
+                self.LL, self.LH, self.HL, self.HHS = DWT_version_2(self.stego_k, self.eng)
 
                 # Selection of Embeding Location
                 self.selEmbLoc()

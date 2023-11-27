@@ -2,20 +2,20 @@ from Utils import *
 from WCBLGAlgorithm import WCBLGAlgorithm
 from WCBLGExtraction import WCBLGExtraction
 import tifffile
+import mylibpkg
 
-
-def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch):
+def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
     # read image
     image_original = tifffile.imread(image_path)
 
     # convert image to grayscale
-    cover_image = color_to_gray_matlab(image_original)
+    cover_image = color_to_gray_matlab(image_original, eng)
 
     # read message
     data = read_message("message/Lorem Ipsum 100B.txt")
 
     # calling embedding algorithm
-    wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch)
+    wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng)
     bestSeeds, stego_image, tags = wcblgEmbedding.wcblg()
     print(bestSeeds)
 
@@ -25,7 +25,7 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch):
     save_image(stego_image, "stego_image/stego_image_1.tif")
 
 
-def decrypt(key, Bs, mul):
+def decrypt(key, Bs, mul, eng):
     # read image
     stego_image = tifffile.imread("stego_image/stego_image_1.tif")
 
@@ -37,13 +37,14 @@ def decrypt(key, Bs, mul):
     data_bin = string_to_bin(data)
 
     # calling extraction algorithm
-    wcblgExtraction = WCBLGExtraction(stego_image, key, Bs, mul, bestSeeds, len(data_bin))
+    wcblgExtraction = WCBLGExtraction(stego_image, key, Bs, mul, bestSeeds, len(data_bin), eng)
     hidden_message = wcblgExtraction.extract_data()
 
     print(hidden_message)
 
 
-if __name__ == '__main__':
+def main():
+    eng = mylibpkg.initialize()
     image_path = "original_images/peppers_color.tiff"
 
     key = 12345
@@ -54,6 +55,11 @@ if __name__ == '__main__':
     Pm = 0.2
     Epoch = 20
 
-    encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch)
+    encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng)
+    decrypt(key, Bs, mul, eng)
 
-    decrypt(key, Bs, mul)
+    eng.terminate()
+
+
+if __name__ == '__main__':
+    main()

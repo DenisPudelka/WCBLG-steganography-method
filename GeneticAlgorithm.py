@@ -1,3 +1,4 @@
+import cProfile
 from random import *
 import random
 import numpy as np
@@ -7,7 +8,7 @@ from Utils import *
 
 
 class GeneticAlgorithm:
-    def __init__(self, n_pop, pc, pm, epoch, can_loc, cover_k, LL, LH, HL, HH, HHprim, data_k, mul, key, HH_keys):
+    def __init__(self, n_pop, pc, pm, epoch, can_loc, cover_k, LL, LH, HL, HH, HHprim, data_k, mul, key, HH_keys, eng):
         self.n_pop = n_pop
         self.pc = pc
         self.pm = pm
@@ -24,6 +25,7 @@ class GeneticAlgorithm:
         self.mul = mul
         self.key = key
         self.HH_keys = HH_keys
+        self.eng = eng
 
     def findBestKey(self):
 
@@ -36,6 +38,7 @@ class GeneticAlgorithm:
             pop_dict = {key: 0 for key in self.pop}
             self.fitness_population(pop_dict)
             self.pop = self.selection(pop_dict)
+            cProfile.runctx('self.fitness_population(pop_dict)', globals(), locals())
 
         return self.pop[0]
 
@@ -91,7 +94,7 @@ class GeneticAlgorithm:
 
     def fitness(self, chromo):
         HHS = embedding(self.HH, self.HHprim, self.can_loc, chromo, self.data_k, self.mul, self.HH_keys)
-        stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS)
+        stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
         return self.picture_fitness(self.cover_k, stego_k)
 
     def picture_fitness(self, cover, stego_image):
