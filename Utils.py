@@ -1,6 +1,8 @@
 import pywt
 import numpy as np
 import mylibpkg
+import os
+import tifffile
 
 def string_to_bin(data):
     return ''.join(format(ord(i), '08b') for i in data)
@@ -32,8 +34,38 @@ def convert_image_datatype(image, data_type):
         return image.astype(data_type)
     return image
 
-def save_image():
-    pass
+def save_image(image, file_path):
+    tags = {
+        'dtype': str(image.dtype),
+        'shape': image.shape,
+        'compression': None,
+        'photometric': 'minisblack',
+        'planarconfig': 'contig',
+        'resolution': (1, 1),
+        'description': 'This is a {} TIF image'.format(image.dtype)
+    }
+    tifffile.imwrite(file_path, image, **tags)
+
+def write_seeds_to_file(seeds, directory='seeds_keys'):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    file_path = os.path.join(directory, 'seeds.txt')
+
+    with open(file_path, 'w') as file:
+        file.write('\n'.join(str(seed) for seed in seeds))
+
+def read_seeds_from_file(directory='seeds_keys'):
+    file_path = os.path.join(directory, 'seeds.txt')
+
+    if not os.path.exists(file_path):
+        return []
+
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    seeds = [int(line.strip()) for line in lines if line.strip()]
+    return seeds
 
 def DWT_version_2(coverk):
     eng = mylibpkg.initialize()
