@@ -39,7 +39,7 @@ class WCBLGExtraction:
                 self.getSubBl(i, j)
 
                 # Wavelet transformation
-                self.LL, self.LH, self.HL, self.HHS = DWT(self.stego_k)
+                self.LL, self.LH, self.HL, self.HHS = DWT_version_2(self.stego_k)
 
                 # Selection of Embeding Location
                 self.selEmbLoc()
@@ -87,7 +87,6 @@ class WCBLGExtraction:
                         self.HHSprim[i, j] = num + 1
                     else:
                         self.HHSprim[i, j] = num - 1
-                        # 4. -2. 12.  0.  4.  0. -8.  4.  0. 20.  0. -8.  6. -4.  4. -2.  0
         edges = np.zeros((n - 2, m - 2))
         for i in range(n - 2):
             for j in range(m - 2):

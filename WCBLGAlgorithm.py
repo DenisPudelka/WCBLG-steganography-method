@@ -12,8 +12,7 @@ import tifffile
 
 class WCBLGAlgorithm:
     def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch):
-        #self.cover_image = tifffile.imread(cover_path)
-        self.cover_image = cv2.imread(cover_path,0)
+        self.cover_image = cover_path
         self.stego_image = None
         self.data = data
         self.key = key
@@ -33,26 +32,7 @@ class WCBLGAlgorithm:
         self.cover_k = None
         self.data_k = None
         self.HH_keys = {}
-        self.tags = {
-            'dtype': 'float64',
-            'shape': self.cover_image.shape,
-            'compression': None,
-            'photometric': 'minisblack',
-            'planarconfig': 'contig',
-            'resolution': (1,1),
-            'description': 'This is a float64 TIF image'
-        }
 
-    # jedno resenje
-    # def fillDataWithEmpty(self, data, block_number):
-    #     remainder = len(data) % block_number
-    #     if remainder != 0:
-    #         padding_needed = block_number - remainder
-    #         data += '0' * padding_needed  # appending the necessary number of '0's
-    #     return data
-
-    def fillDataWithEmpty(self, data, block_number):
-        pass
 
     def wcblg(self):
         m, n = self.cover_image.shape
@@ -62,19 +42,12 @@ class WCBLGAlgorithm:
         NumCols = n // self.BS
 
         block_number = NumRows * NumCols
-        data_padding = self.fillDataWithEmpty(data_bin, block_number)
 
-        #  jedno moguce resenje
-        # L = len(data_padding)
-        # self.len_data = L // block_number
-
-        # default resenje
         L = len(data_bin)
-        self.len_data = L // (
-                NumRows * NumCols)  # if numbers are not divisible , reminder will be lost which means part of message is not embeded, or we fill message with spaces
+        self.len_data = L // (NumRows * NumCols)  # if numbers are not divisible , reminder will be lost which means part of message is not embeded, or we fill message with spaces
 
         k = 1
-        self.stego_image = np.zeros_like(self.cover_image, dtype = 'float64')
+        self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype) # tu mozno dam dtype=image.dtype
         BestSeeds = []
         for i in range(NumRows):
             for j in range(NumCols):
@@ -82,7 +55,7 @@ class WCBLGAlgorithm:
                 self.GetSubBl(data_bin, i, j, k)
 
                 # DWT transformacija
-                self.LL, self.LH, self.HL, self.HH = DWT(self.cover_k)
+                self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k)
 
                 # selekcija lokacije za embedovanje
                 self.SelEmbLoc()
@@ -98,21 +71,16 @@ class WCBLGAlgorithm:
                 HHS = embedding(self.HH, self.HHprim, self.can_loc, bestseedk, self.data_k, self.mul, self.HH_keys)
 
                 # IDWT transformacija
-                stego_k = IDWT(self.LL, self.LH, self.HL, HHS)
+                stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS)
 
                 # Spajanje blokova
                 self.SetSubBl(stego_k, i, j)
                 print('jedna iteracija')
                 k += 1
 
-        # cv2.imwrite("stego_image.png", Stego)
-        # self.stego_image = Stego
+        return BestSeeds, self.stego_image
 
-        # self.stego_image = self.stego_image.astype(np.float32)
 
-        return BestSeeds, self.stego_image, self.tags
-
-    # self.HH, datak, self.key, self.mul, self.len_data
     def SelEmbLoc(self):
         seed(self.key)
 
