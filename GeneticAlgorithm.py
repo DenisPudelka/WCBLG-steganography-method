@@ -94,8 +94,8 @@ class GeneticAlgorithm:
 
     def fitness(self, chromo):
         HHS = embedding(self.HH, self.HHprim, self.can_loc, chromo, self.data_k, self.mul, self.HH_keys)
-        stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
-        #stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+        #stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+        stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
         return self.picture_fitness(self.cover_k, stego_k)
 
     def picture_fitness(self, cover, stego_image):
