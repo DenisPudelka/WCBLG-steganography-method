@@ -1,23 +1,25 @@
 import mylibpkg
 import tifffile
 import numpy as np
-import Utils
+from Utils import *
 import matplotlib.pyplot as plt
 
-image = tifffile.imread("original_images/baboon_color.tiff")
+image = tifffile.imread("original_images/peppers_color.tiff")
 
-if image.dtype != np.uint8:
-    image = image.astype(np.uint8)
+# if image.dtype != np.uint8:
+#     image = image.astype(np.uint8)
 
 eng = mylibpkg.initialize()
-image_gray_matlab = eng.convert_rgb_to_gray(image)
-image_gray = np.array(image_gray_matlab)
+
+image_gray_matlab = color_to_gray_matlab(image, eng)
+image_converte_datatype_matlab = convert_image_to_datatype_matlab(image_gray_matlab, "double", eng)
+image_gray = np.array(image_converte_datatype_matlab)
+
+LL, LH, HL, HH = DWT_version_2(image_gray, eng)
+
+reconstructed_image = IDWT_version_2(LL, LH, HL, HH, eng)
+
 eng.terminate()
-
-LL, LH, HL, HH = Utils.DWT_version_2(image_gray)
-
-reconstructed_image = Utils.IDWT_version_2(LL, LH, HL, HH)
-
 # Display - Original image and Reconstructed
 fig, axs = plt.subplots(1, 2, figsize=(10, 5))
 

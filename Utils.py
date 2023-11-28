@@ -76,8 +76,10 @@ def read_message(file_path):
         return None
 
 def DWT_version_2(coverk, eng):
+    # we send image that can be type of double, single, uint8, probably also (uint16)
     coverk_contiguous = np.ascontiguousarray(coverk)
-    dwt_result = eng.perform_dwt(coverk_contiguous, 'haar')
+    dwt_result = eng.perform_dwt(coverk_contiguous, 'bior1.1')
+    # this returns me always double
     LL = np.array(dwt_result[0])
     LH = np.array(dwt_result[1])
     HL = np.array(dwt_result[2])
@@ -94,7 +96,7 @@ def IDWT_version_2(LL, LH, HL, HH, eng):
     LH_contiguous = np.ascontiguousarray(LH)
     HL_contiguous = np.ascontiguousarray(HL)
     HH_contiguous = np.ascontiguousarray(HH)
-    idwt_result = eng.perform_idwt(LL_contiguous, LH_contiguous, HL_contiguous, HH_contiguous, 'haar')
+    idwt_result = eng.perform_idwt(LL_contiguous, LH_contiguous, HL_contiguous, HH_contiguous, 'bior1.1')
     reconstructed_image = np.array(idwt_result)
     return reconstructed_image
 

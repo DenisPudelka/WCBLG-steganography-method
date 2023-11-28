@@ -96,12 +96,12 @@ class WCBLGAlgorithm:
                 self.HH_keys[str(i) + "," + str(j)] = r
                 num_int = int(round(num))
                 if num_int % 2 == 0:
-                    self.HHprim[i, j] = num
+                    self.HHprim[i, j] = num_int     # previously here was num instead of num_int
                 else:
                     if r <= 0.5:
-                        self.HHprim[i, j] = num + 1
+                        self.HHprim[i, j] = num_int + 1     # previously here was num instead of num_int
                     else:
-                        self.HHprim[i, j] = num - 1
+                        self.HHprim[i, j] = num_int - 1     # previously here was num instead of num_int
         edges = np.zeros((n - 2, m - 2))
         for i in range(n - 2):
             for j in range(m - 2):
