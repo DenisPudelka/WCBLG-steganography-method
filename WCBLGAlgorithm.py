@@ -56,8 +56,8 @@ class WCBLGAlgorithm:
                 self.GetSubBl(data_bin, i, j, k)
 
                 # DWT or IWT transformacija
-                #self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k, self.eng)
-                self.LL, self.LH, self.HL, self.HH = IWT_version_2(self.cover_k, self.eng)
+                self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k, self.eng)
+                #self.LL, self.LH, self.HL, self.HH = IWT_version_2(self.cover_k, self.eng)
 
                 # selekcija lokacije za embedovanje
                 self.SelEmbLoc()
@@ -73,8 +73,8 @@ class WCBLGAlgorithm:
                 HHS = embedding(self.HH, self.HHprim, self.can_loc, bestseedk, self.data_k, self.mul, self.HH_keys)
 
                 # IDWT or IIWT transformacija
-                #stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
-                stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+                stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+                #stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
 
                 # Spajanje blokova
                 self.SetSubBl(stego_k, i, j)
@@ -86,7 +86,6 @@ class WCBLGAlgorithm:
 
     def SelEmbLoc(self):
         seed(self.key)
-
         n, m = self.HH.shape
         self.HH_keys = {}
         self.HHprim = np.zeros((n, m))

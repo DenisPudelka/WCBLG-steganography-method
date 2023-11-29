@@ -12,7 +12,7 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
     cover_image = color_to_gray_matlab(image_original, eng)
 
     # convert image to different datatype
-    cover_image = convert_image_to_datatype_matlab(cover_image, "uint16", eng)
+    cover_image = convert_image_to_datatype_matlab(cover_image, "single", eng)
 
     # read message
     data = read_message("message/Lorem Ipsum 1000B.txt")

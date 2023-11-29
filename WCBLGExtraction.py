@@ -41,8 +41,8 @@ class WCBLGExtraction:
                 self.getSubBl(i, j)
 
                 # Wavelet transformation
-                #self.LL, self.LH, self.HL, self.HHS = DWT_version_2(self.stego_k, self.eng)
-                self.LL, self.LH, self.HL, self.HHS = IWT_version_2(self.stego_k, self.eng)
+                self.LL, self.LH, self.HL, self.HHS = DWT_version_2(self.stego_k, self.eng)
+                #self.LL, self.LH, self.HL, self.HHS = IWT_version_2(self.stego_k, self.eng)
 
                 # Selection of Embeding Location
                 self.selEmbLoc()
