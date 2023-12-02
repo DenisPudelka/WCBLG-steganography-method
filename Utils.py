@@ -1,11 +1,13 @@
 import pywt
 import numpy as np
-import mylibpkg
+import struct
 import os
 import tifffile
 
+
 def string_to_bin(data):
     return ''.join(format(ord(i), '08b') for i in data)
+
 
 def bin_to_string(binary):
     binary_str = ""
@@ -13,10 +15,21 @@ def bin_to_string(binary):
         binary_str += str(int(item))
     return ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
 
+
+def float_to_bin(num):
+    return struct.unpack('>Q', struct.pack('>d', num))[0]
+
+
+def bin_to_float(binary):
+    # Convert a binary representation (as an integer) back into a float.
+    return struct.unpack('>d', struct.pack('>Q', binary))[0]
+
+
 def color_to_gray_matlab(image, eng):
     image_matlab_gray = eng.convert_rgb_to_gray(image)
     image_gray = np.array(image_matlab_gray)
     return image_gray
+
 
 def convert_image_to_datatype_matlab(image, data_type, eng):
     # uint8, uint16, single, double
@@ -24,11 +37,13 @@ def convert_image_to_datatype_matlab(image, data_type, eng):
     image_converted = np.array(image_matlab_converted)
     return image_converted
 
+
 def convert_image_datatype(image, data_type):
     # np.uint8, np.uint16, np.int8, np.int16, np.float32, np.float64
     if image.dtype != data_type:
         return image.astype(data_type)
     return image
+
 
 def save_image(image, file_path):
     tags = {
@@ -42,6 +57,7 @@ def save_image(image, file_path):
     }
     tifffile.imwrite(file_path, image, **tags)
 
+
 def write_seeds_to_file(seeds, file_name, directory='seeds_keys'):
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -50,6 +66,7 @@ def write_seeds_to_file(seeds, file_name, directory='seeds_keys'):
 
     with open(file_path, 'w') as file:
         file.write('\n'.join(str(seed) for seed in seeds))
+
 
 def read_seeds_from_file(file_name, directory='seeds_keys'):
     file_path = os.path.join(directory, file_name)
@@ -63,6 +80,7 @@ def read_seeds_from_file(file_name, directory='seeds_keys'):
     seeds = [int(line.strip()) for line in lines if line.strip()]
     return seeds
 
+
 def read_message(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -75,6 +93,7 @@ def read_message(file_path):
         print(f"An error occurred: {e}")
         return None
 
+
 def DWT_version_2(coverk, eng):
     # we send image that can be type of double, single, uint8, probably also (uint16)
     coverk_contiguous = np.ascontiguousarray(coverk)
@@ -86,10 +105,12 @@ def DWT_version_2(coverk, eng):
     HH = np.array(dwt_result[3])
     return LL, LH, HL, HH
 
+
 def DWT(coverk):
     coeffs2 = pywt.dwt2(coverk, 'db2')
     LL, (LH, HL, HH) = coeffs2
     return LL, LH, HL, HH
+
 
 def IDWT_version_2(LL, LH, HL, HH, eng):
     LL_contiguous = np.ascontiguousarray(LL)
@@ -100,10 +121,12 @@ def IDWT_version_2(LL, LH, HL, HH, eng):
     reconstructed_image = np.array(idwt_result)
     return reconstructed_image
 
+
 def IDWT(LL, LH, HL, HH):
     coeffs = (LL, (LH, HL, HH))
     idwt_result = pywt.idwt2(coeffs, 'db2')
     return idwt_result
+
 
 def IWT_version_2(coverk, eng):
     coverk_contiguous = np.ascontiguousarray(coverk)
@@ -113,6 +136,7 @@ def IWT_version_2(coverk, eng):
     HL = np.array(iwt_result[2][0])
     HH = np.array(iwt_result[3][0])
     return LL, LH, HL, HH
+
 
 def IIWT_version_2(LL, LH, HL, HH, eng):
     iiwt_result = eng.perform_iiwt_version2(LL, LH, HL, HH, 'haar', 0)
