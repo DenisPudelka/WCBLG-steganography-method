@@ -8,7 +8,7 @@ from Utils import *
 
 
 class GeneticAlgorithm:
-    def __init__(self, n_pop, pc, pm, epoch, can_loc, cover_k, LL, LH, HL, HH, HHprim, data_k, mul, key, HH_keys, eng):
+    def __init__(self, n_pop, pc, pm, epoch, can_loc, cover_k, LL, LH, HL, HH, HHprim, data_k, mul, key, HH_keys, eng, use_iwt):
         self.n_pop = n_pop
         self.pc = pc
         self.pm = pm
@@ -26,6 +26,7 @@ class GeneticAlgorithm:
         self.key = key
         self.HH_keys = HH_keys
         self.eng = eng
+        self.use_iwt = use_iwt
 
     def findBestKey(self):
 
@@ -93,9 +94,11 @@ class GeneticAlgorithm:
             pop_dict[chromo] = self.fitness(chromo)
 
     def fitness(self, chromo):
-        HHS = embedding(self.HH, self.HHprim, self.can_loc, chromo, self.data_k, self.mul, self.HH_keys)
-        stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
-        #stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+        HHS = embedding(self.HH, self.HHprim, self.can_loc, chromo, self.data_k, self.mul, self.HH_keys, self.use_iwt)
+        if self.use_iwt:
+            stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+        else:
+            stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
         return self.picture_fitness(self.cover_k, stego_k)
 
     def picture_fitness(self, cover, stego_image):

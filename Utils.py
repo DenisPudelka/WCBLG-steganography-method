@@ -21,8 +21,14 @@ def float_to_bin(num):
 
 
 def bin_to_float(binary):
-    # Convert a binary representation (as an integer) back into a float.
     return struct.unpack('>d', struct.pack('>Q', binary))[0]
+
+
+def modify_lsb_of_float(num, bit):
+    binary = float_to_bin(num)
+    if (binary & 1) != bit:
+        binary ^= 1
+    return bin_to_float(binary)
 
 
 def color_to_gray_matlab(image, eng):

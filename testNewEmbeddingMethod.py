@@ -31,11 +31,11 @@ def modify_lsb_of_float(num, bit):
 #         d += 1
 #     return HHS
 
-num = 0.000002132
+num = 0.000002133
 bin_representation = float_to_bin(num)
 newNum = bin_to_float(bin_representation)
 modyNum = modify_lsb_of_float(num, 1)
 
-print("Float to binary representation: ", bin_representation)
+print("Float to binary representation: ", bin_representation % 2)
 print("Binary to float/int: ", newNum)
 print("Modifying LSB of a float/integer num: ", modyNum)

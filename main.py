@@ -4,7 +4,7 @@ from WCBLGExtraction import WCBLGExtraction
 import tifffile
 import mylibpkg
 
-def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
+def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt):
     # read image
     image_original = tifffile.imread(image_path)
 
@@ -18,7 +18,7 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
     data = read_message("message/Lorem Ipsum 25B.txt")
 
     # calling embedding algorithm
-    wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng)
+    wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt)
     bestSeeds, stego_image = wcblgEmbedding.wcblg()
     print(bestSeeds)
 
@@ -28,7 +28,7 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
     save_image(stego_image, "stego_image/stego_image_1.tif")
 
 
-def decrypt(key, Bs, mul, eng):
+def decrypt(key, Bs, mul, eng, use_iwt):
     # read image
     stego_image = tifffile.imread("stego_image/stego_image_1.tif")
 
@@ -40,7 +40,7 @@ def decrypt(key, Bs, mul, eng):
     data_bin = string_to_bin(data)
 
     # calling extraction algorithm
-    wcblgExtraction = WCBLGExtraction(stego_image, key, Bs, mul, bestSeeds, len(data_bin), eng)
+    wcblgExtraction = WCBLGExtraction(stego_image, key, Bs, mul, bestSeeds, len(data_bin), eng, use_iwt)
     hidden_message = wcblgExtraction.extract_data()
 
     print(hidden_message)
@@ -57,9 +57,10 @@ def main():
     Pc = 0.7
     Pm = 0.2
     Epoch = 20
+    use_iwt = False
 
-    encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng)
-    decrypt(key, Bs, mul, eng)
+    encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt)
+    decrypt(key, Bs, mul, eng, use_iwt)
 
     eng.terminate()
 
