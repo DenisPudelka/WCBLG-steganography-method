@@ -15,7 +15,7 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng):
     cover_image = convert_image_to_datatype_matlab(cover_image, "single", eng)
 
     # read message
-    data = read_message("message/Lorem Ipsum 1000B.txt")
+    data = read_message("message/Lorem Ipsum 25B.txt")
 
     # calling embedding algorithm
     wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng)
@@ -36,7 +36,7 @@ def decrypt(key, Bs, mul, eng):
     bestSeeds = read_seeds_from_file("seeds_1.txt")
 
     # read message and get length in bin
-    data = read_message("message/Lorem Ipsum 1000B.txt")
+    data = read_message("message/Lorem Ipsum 25B.txt")
     data_bin = string_to_bin(data)
 
     # calling extraction algorithm
