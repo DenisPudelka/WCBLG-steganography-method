@@ -32,19 +32,14 @@ def embedding(HH, HHprim, can_loc, best_seed, data_k, mul, HH_keys, use_iwt):
     else:
         for i, j in best_loc:
             data_part = int(data_k[d])
-            num = HHprim[i, j]
+            num = int(round(HHprim[i, j]))
             if num % 2 != data_part:
+
                 r = HH_keys[str(i) + "," + str(j)]
                 if r <= 0.5:
-                    bin = float_to_bin(num)
-
-                    float = bin_to_float(bin)
-                    HHS[i,j] = float
+                    HHS[i, j] = HHprim[i, j] - 1
                 else:
-                    bin = float_to_bin(num)
-                    # need to increase LSB
-                    float = bin_to_float(bin)
-                    HHS[i,j] = float
+                    HHS[i, j] = HHprim[i, j] + 1
             else:
                 HHS[i, j] = HHprim[i, j]
             d += 1

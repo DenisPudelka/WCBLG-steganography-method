@@ -12,10 +12,10 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt):
     cover_image = color_to_gray_matlab(image_original, eng)
 
     # convert image to different datatype
-    cover_image = convert_image_to_datatype_matlab(cover_image, "single", eng)
+    cover_image = convert_image_to_datatype_matlab(cover_image, "uint8", eng)
 
     # read message
-    data = read_message("message/Lorem Ipsum 25B.txt")
+    data = read_message("message/Lorem Ipsum 1000B.txt")
 
     # calling embedding algorithm
     wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt)
@@ -36,7 +36,7 @@ def decrypt(key, Bs, mul, eng, use_iwt):
     bestSeeds = read_seeds_from_file("seeds_1.txt")
 
     # read message and get length in bin
-    data = read_message("message/Lorem Ipsum 25B.txt")
+    data = read_message("message/Lorem Ipsum 1000B.txt")
     data_bin = string_to_bin(data)
 
     # calling extraction algorithm
@@ -57,7 +57,7 @@ def main():
     Pc = 0.7
     Pm = 0.2
     Epoch = 20
-    use_iwt = False
+    use_iwt = True
 
     encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt)
     decrypt(key, Bs, mul, eng, use_iwt)

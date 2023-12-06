@@ -73,7 +73,7 @@ class WCBLGAlgorithm:
                 BestSeeds.append(bestseedk)
 
                 # Embedovanje data
-                HHS = embedding(self.HH, self.HHprim, self.can_loc, bestseedk, self.data_k, self.mul, self.HH_keys)
+                HHS = embedding(self.HH, self.HHprim, self.can_loc, bestseedk, self.data_k, self.mul, self.HH_keys, self.use_iwt)
 
                 # IDWT or IIWT transformacija
                 if self.use_iwt:
