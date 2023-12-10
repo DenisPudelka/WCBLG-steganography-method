@@ -47,7 +47,7 @@ class WCBLGAlgorithm:
 
         L = len(data_bin)
         self.len_data = L // (block_number)  # if numbers are not divisible , reminder will be lost which means part of message is not embeded, or we fill message with spaces
-
+        # if l  <  m * n / 4
         k = 1
         self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype) # tu mozno dam dtype=image.dtype
         BestSeeds = []
