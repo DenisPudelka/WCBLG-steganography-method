@@ -90,3 +90,4 @@ print("Incrementing by the smallest amount using numpy library: number:", increm
 print("Incrementing by the smallest amount dynamically: number:", increment_float_dynamic_2(num), " binary: ", float_to_bin(increment_float(num)))
 print("Decrement by the smallest amount dynamically: number:", decrement_float_dynamic(num), " binary: ", float_to_bin(increment_float(num)))
 print("Decrement by the smallest amount dynamically: number:", decrement_float_dynamic_2(num), " binary: ", float_to_bin(increment_float(num)))
+print("Rounding float: ", round(num))
