@@ -37,9 +37,13 @@ def embedding(HH, HHprim, can_loc, best_seed, data_k, mul, HH_keys, use_iwt):
 
                 r = HH_keys[str(i) + "," + str(j)]
                 if r <= 0.5:
-                    HHS[i, j] = HHprim[i, j] - 1
+                    decimal_places = str(HHprim[i, j])[::-1].find('.')
+                    decrement = 10 ** (-decimal_places)
+                    HHS[i, j] = round(HHprim[i, j] - decrement, decimal_places)
                 else:
-                    HHS[i, j] = HHprim[i, j] + 1
+                    decimal_places = str(HHprim[i, j])[::-1].find('.')
+                    increment = 10 ** (-decimal_places)
+                    HHS[i, j] = round(HHprim[i, j] + increment, decimal_places)
             else:
                 HHS[i, j] = HHprim[i, j]
             d += 1
