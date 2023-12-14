@@ -39,11 +39,11 @@ class WCBLGAlgorithm:
 
     def number_of_quarters(self, L):
         m, n = self.cover_image.shape
-        if L < m * n / 4:
+        if L < m * n / (4 * self.mul):
             return 1
-        if L < 2 * m * n / 4:
+        if L < 2 * m * n / (4 * self.mul):
             return 2
-        if L < 3 * m * n / 4:
+        if L < 3 * m * n / (4 * self.mul):
             return 3
         return -1
 
@@ -75,11 +75,25 @@ class WCBLGAlgorithm:
 
 
     def wcblg(self):
-        pass
+        data_bin = string_to_bin(self.data)
+        l = len(data_bin)
+        number_of_quarters = self.number_of_quarters(l)
+        self.extract_data_by_subbands(number_of_quarters)
 
-    def wcblg_for_subband(self, subband, data_for_subband):
+        if number_of_quarters > 0:
+            self.wcblg_for_subband(self.HH, self.data_bin_by_subband[0])
+        elif number_of_quarters > 1:
+            self.wcblg_for_subband()
+        elif number_of_quarters > 2:
+            self.wcblg_for_subband()
+        else:
+            return  None
+
+    def wcblg_for_subband(self, number_of_quarters):
         m, n = self.cover_image.shape
-        data_bin = string_to_bin(data_for_subband)
+        data_bin  = []
+
+        data_bin = string_to_bin()
 
         NumRows = m // self.BS
         NumCols = n // self.BS
@@ -93,13 +107,11 @@ class WCBLGAlgorithm:
         self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype) # tu mozno dam dtype=image.dtype
         BestSeeds = []
 
-        number_of_quarters = self.number_of_quarters(L)
-        if number_of_quarters == -1:
-            return  None, None
+
         for i in range(NumRows):
             for j in range(NumCols):
                 # Extrakcia blokova
-                self.GetSubBl(data_bin, i, j, k)
+                self.GetSubBlCoverK( i, j)
 
                 # DWT or IWT transformacija
                 if self.use_iwt:
@@ -107,36 +119,28 @@ class WCBLGAlgorithm:
                 else:
                     self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k, self.eng)
 
-
+                HHS = self.HH
+                HLS = self.HL
+                LHS = self.LH
                 if number_of_quarters > 0:
-                    # for HH
+                    self.GetSubBlDataK(self.data_bin_by_subband[0], k)
                     HHS = self.get_subband_s(BestSeeds, self.HH)
-                if number_of_quarters > 1:
-                    #for HL
+                elif number_of_quarters > 1:
+                    self.GetSubBlDataK(self.data_bin_by_subband[1], k)
                     HLS = self.get_subband_s(BestSeeds, self.HL)
+                elif number_of_quarters > 2:
+                    self.GetSubBlDataK(self.data_bin_by_subband[2], k)
+                    LHS = self.get_subband_s(BestSeeds, self.LH)
 
 
-                # for HL
-                # selekcija lokacije za embedovanje
-                self.SelEmbLocForSubband(self.HL)
+                subband_s = self.get_subband_s(BestSeeds, subband=0)
 
-                # GA
-                genericAlgorithm = GeneticAlgorithm(self.n_pop, self.pc, self.pm, self.epoch, self.can_loc,
-                                                    self.cover_k, self.LL, self.LH, self.HL, self.HH, self.subband_prim,
-                                                    self.data_k, self.mul, self.key, self.subband_keys, self.eng,
-                                                    self.use_iwt)
-                bestseedk = genericAlgorithm.findBestKey()  # treba da se popravi
-                BestSeeds.append(bestseedk)
-
-                # Embedovanje data
-                HHS = embedding(self.HH, self.subband_prim, self.can_loc, bestseedk, self.data_k, self.mul,
-                                self.subband_keys, self.use_iwt)
 
                 # IDWT or IIWT transformacija
                 if self.use_iwt:
-                    stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+                    stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
                 else:
-                    stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+                    stego_k = IDWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
 
                 # Spajanje blokova
                 self.SetSubBl(stego_k, i, j)
@@ -145,59 +149,6 @@ class WCBLGAlgorithm:
 
         return BestSeeds, self.stego_image
 
-
-    def wcblg2(self):
-        m, n = self.cover_image.shape
-        data_bin = string_to_bin(self.data)
-        NumRows = m // self.BS
-        NumCols = n // self.BS
-        totalCapacity = m * n
-        HH_Capacity = totalCapacity / 4
-        block_number = NumRows * NumCols
-        L = len(data_bin)
-        self.len_data = L // (block_number)
-
-        if self.len_data <= HH_Capacity:
-            # Embed in HH subband
-            self.EmbedInHH()
-        else:
-            # first embed in HH subband
-            # get data to embed in HH subband
-            self.EmbedInHH()
-
-            # calculate remaining data to embed
-            remainingData = 0
-            remainingDataLength = 0
-
-            # decide how to spread the rest of data to HL and LH subbands
-            HL_capacity = 0
-            LH_capacity = 0
-
-            if remainingDataLength <= HL_capacity:
-                # embed in HL subband
-                self.EmbedInHL()
-            elif remainingDataLength <= (HL_capacity + LH_capacity):
-                HL_data = 0
-                LH_data = 0
-                self.EmbedInHL()
-                self.EmbedInLH()
-            else:
-                raise Exception("Data length exceeds the embedding capacity.")
-
-
-
-    def embed_data_in_subband(self):
-        pass
-
-
-    def EmbedInHH(self):
-        pass
-
-    def EmbedInHL(self):
-        pass
-
-    def EmbedInLH(self):
-        pass
 
     def SelEmbLocForSubband(self, subband):
         seed(self.key)
@@ -216,11 +167,13 @@ class WCBLGAlgorithm:
                         self.subband_prim[i, j] = num_int + 1     # previously here was num instead of num_int
                     else:
                         self.subband_prim[i, j] = num_int - 1     # previously here was num instead of num_int
-        edges = np.zeros((n - 2, m - 2))
-        for i in range(n - 2):
-            for j in range(m - 2):
+        edges = np.zeros((n, m))
+        for i in range(n):
+            for j in range(m):
                 for x in range(-1, 2):
                     for y in range(-1, 2):
+                        if i + x < 0 or i + x >= n or j + y < 0 or j + y >= m:
+                            continue
                         edges[i, j] += abs(self.subband_prim[i + x + 1, j + y + 1])
         edges_array = edges.flatten()
         # edges_array[::-1].sort() ovo moze da radi problem jer nikde necuvamo sortirani array
@@ -229,16 +182,17 @@ class WCBLGAlgorithm:
 
         element_number = math.ceil(self.mul * self.len_data)
         if len(edges_array) < element_number:
+            print("No place for embedding.")
             return None, None
         treshold = edges_array[element_number - 1]
 
         self.can_loc = []
         elements_found = 0
         break_loop = False
-        for i in range(n - 2):
-            for j in range(m - 2):
+        for i in range(n):
+            for j in range(m):
                 if edges[i, j] >= treshold:
-                    self.can_loc.append((i + 1, j + 1))
+                    self.can_loc.append((i, j))
                     elements_found += 1
                 if elements_found == element_number:
                     break_loop = True
@@ -247,6 +201,17 @@ class WCBLGAlgorithm:
                 break
 
         return self.can_loc, self.subband_prim  # returns locations in HH with hihgest edge and HHPrim(like HH but all even)
+
+
+    def GetSubBlCoverK(self, i, j):
+        Starti = i * self.BS
+        Startj = j * self.BS
+        Endi = (i + 1) * self.BS
+        Endj = (j + 1) * self.BS
+        self.cover_k = self.cover_image[Starti: Endi, Startj: Endj]
+
+    def GetSubBlDataK(self, data_bin, k):
+        self.data_k = data_bin[(k - 1) * self.len_data: k * self.len_data]
 
     def GetSubBl(self, data_bin, i, j, k):
         Starti = i * self.BS
