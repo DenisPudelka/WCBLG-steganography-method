@@ -1,4 +1,6 @@
+import math
 import struct
+import numpy as np
 
 def float_to_bin(num):
     # Convert a float into its binary representation (as an integer).
@@ -14,6 +16,28 @@ def modify_lsb_of_float(num, bit):
     if (binary & 1) != bit:
         binary ^= 1
     return bin_to_float(binary)
+
+
+def increment_float(num):
+    return math.nextafter(num, math.inf)
+
+
+def increment_float_numpy(num):
+    return np.nextafter(num, np.inf)
+
+
+def increment_float_dynamic(num):
+    decimal_places = str(num)[::-1].find('.')
+    increment = 10 ** (-decimal_places)
+    return round(num + increment, decimal_places)
+
+def increment_float_dynamic_2(num):
+    num_str = '{:.15f}'.format(num).rstrip('0')
+    decimal_places = num_str[::-1].find('.')
+    increment = 10 ** (-decimal_places)
+    incremented_num = round(num + increment, decimal_places)
+    #return format(incremented_num, f'.{decimal_places}f')
+    return incremented_num
 
 # def embedding(HH, HHprim, can_loc, best_seed, data_k, mul, HH_keys):
 #     np.random.seed(int(best_seed))
@@ -31,11 +55,16 @@ def modify_lsb_of_float(num, bit):
 #         d += 1
 #     return HHS
 
-num = 0.000002133
+num = 0.000000000009
 bin_representation = float_to_bin(num)
 newNum = bin_to_float(bin_representation)
 modyNum = modify_lsb_of_float(num, 1)
 
-print("Float to binary representation: ", bin_representation % 2)
+print("Number where i want to change LSB: ", num)
+print("Float to binary representation: ", bin_representation)
 print("Binary to float/int: ", newNum)
 print("Modifying LSB of a float/integer num: ", modyNum)
+print("Modified LSB to binary: ", float_to_bin(modyNum))
+print("Incrementing by the smallest amount using math library: number:", increment_float(num), " binary: ", float_to_bin(increment_float(num)))
+print("Incrementing by the smallest amount using numpy library: number:", increment_float_numpy(num), " binary: ", float_to_bin(increment_float(num)))
+print("Incrementing by the smallest amount dynamically: number:", increment_float_dynamic_2(num), " binary: ", float_to_bin(increment_float(num)))
