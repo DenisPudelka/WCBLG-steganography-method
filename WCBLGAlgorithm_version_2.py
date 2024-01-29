@@ -6,7 +6,7 @@ import math
 import cv2
 from Utils import *
 from Embedding_version_2 import embedding
-from GeneticAlgorithm import GeneticAlgorithm
+from GeneticAlgorithm_version_2 import GeneticAlgorithm
 import tifffile
 
 
@@ -71,20 +71,17 @@ class WCBLGAlgorithm:
             self.data_bin_HL = data_bin[self.max_capacity_per_subband:]
             self.data_bin_HL = data_len - self.max_capacity_per_subband
             self.len_data_HL_block = self.len_data_HL // block_number
+            if self.len_data_HL % block_number != 0:
+                print("max len data per block not divible by block number")
+                return False
             return True
         if data_len <= 3 * self.max_capacity_per_subband:
             self.data_bin_HH = data_bin[0: self.max_capacity_per_subband]
             self.len_data_HH = self.max_capacity_per_subband
             self.len_data_HH_block = self.len_data_HH // block_number
-            if self.len_data_HH % block_number != 0:
-                print("max len data per block not divible by block number")
-                return False
             self.data_bin_HL = data_bin[self.max_capacity_per_subband: 2 * self.max_capacity_per_subband]
             self.len_data_HL = self.max_capacity_per_subband
             self.len_data_HL_block = self.len_data_HL // block_number
-            if self.len_data_HL % block_number != 0:
-                print("max len data per block not divible by block number")
-                return False
             self.data_bin_LH = data_bin[2 * self.max_capacity_per_subband:]
             self.len_data_LH = data_len - 2 * self.max_capacity_per_subband
             self.len_data_LH_block = self.len_data_LH // block_number

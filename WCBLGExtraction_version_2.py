@@ -4,7 +4,6 @@ from random import seed
 import math
 from Utils import *
 
-
 class WCBLGExtraction:
     def __init__(self, stego_image, key, bs, mul, best_seed, l, eng, use_iwt):
         self.stego_image = stego_image
@@ -100,7 +99,7 @@ class WCBLGExtraction:
                     for y in range(-1, 2):
                         if i + x < 0 or i + x >= n or j + y < 0 or j + y >= m:
                             continue
-                        edges[i, j] += abs(self.HHSprim[i + x, j + y])  # edges[i, j] += abs(subband_prim[i + x + 1, j + y + 1])
+                        edges[i, j] += abs(self.HHSprim[i + x, j + y])
         edges_array = edges.flatten()
         edges_array[::-1].sort()
 
