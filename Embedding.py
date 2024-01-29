@@ -30,6 +30,23 @@ def embedding(HH, HHprim, can_loc, best_seed, data_k, mul, HH_keys, use_iwt):
                 HHS[i, j] = HHprim[i, j]
             d += 1
     else:
+        # for i, j in best_loc:
+        #     data_part = int(data_k[d])
+        #     num = int(round(HHprim[i, j]))
+        #     if num % 2 != data_part:
+        #
+        #         r = HH_keys[str(i) + "," + str(j)]
+        #         if r <= 0.5:
+        #             decimal_places = str(HHprim[i, j])[::-1].find('.')
+        #             decrement = 10 ** (-decimal_places)
+        #             HHS[i, j] = round(HHprim[i, j] - decrement, decimal_places)
+        #         else:
+        #             decimal_places = str(HHprim[i, j])[::-1].find('.')
+        #             increment = 10 ** (-decimal_places)
+        #             HHS[i, j] = round(HHprim[i, j] + increment, decimal_places)
+        #     else:
+        #         HHS[i, j] = HHprim[i, j]
+        #     d += 1
         for i, j in best_loc:
             data_part = int(data_k[d])
             num = int(round(HHprim[i, j]))
@@ -37,13 +54,9 @@ def embedding(HH, HHprim, can_loc, best_seed, data_k, mul, HH_keys, use_iwt):
 
                 r = HH_keys[str(i) + "," + str(j)]
                 if r <= 0.5:
-                    decimal_places = str(HHprim[i, j])[::-1].find('.')
-                    decrement = 10 ** (-decimal_places)
-                    HHS[i, j] = round(HHprim[i, j] - decrement, decimal_places)
+                    HHS[i, j] = HHprim[i, j] - 1
                 else:
-                    decimal_places = str(HHprim[i, j])[::-1].find('.')
-                    increment = 10 ** (-decimal_places)
-                    HHS[i, j] = round(HHprim[i, j] + increment, decimal_places)
+                    HHS[i, j] = HHprim[i, j] + 1
             else:
                 HHS[i, j] = HHprim[i, j]
             d += 1
