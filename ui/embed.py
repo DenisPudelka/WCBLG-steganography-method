@@ -92,8 +92,8 @@ class EmbedMode:
         image_frame = tk.Frame(self.file_frame)
         image_frame.pack(fill="x", pady=5)
 
-        tk.Label(image_frame, text="Image:").pack(side="left")
-        tk.Button(image_frame, text="Select File", command=self.select_file).pack(side="left", padx=10)
+        tk.Label(image_frame, text="Cover image:").pack(side="left")
+        tk.Button(image_frame, text="Select File").pack(side="left", padx=10)
         self.image_file_label = tk.Label(image_frame, text="No file selected")
         self.image_file_label.pack(side="left")
 
@@ -101,11 +101,7 @@ class EmbedMode:
         message_frame.pack(fill="x", pady=5)
 
         tk.Label(message_frame, text="Message:").pack(side="left")
-        tk.Button(message_frame, text="Select File", command=self.select_file).pack(side="left", padx=10)
+        tk.Button(message_frame, text="Select File").pack(side="left", padx=10)
         self.message_file_label = tk.Label(message_frame, text="No file selected")
         self.message_file_label.pack(side="left")
 
-    def select_file(self):
-        file_path = tk.filedialog.askopenfilename()
-        if file_path:
-            self.file_label.config(text=file_path)
