@@ -12,17 +12,6 @@ class WCBLGExtraction:
         self.mul = mul
         self.best_seed = best_seed
         self.data_len = data_len
-        self.len_data = None
-        # self.stego_k = None
-        # self.LL = None
-        # self.LH = None
-        # self.HL = None
-        # self.HHS = None
-        # self.HHSprim = None
-        # self.can_loc = None
-       # self.data_k = None
-        self.data = np.zeros(data_len)
-        self.message = None
         self.eng = eng
         self.use_iwt = use_iwt
         self.m, self.n = self.stego_image.shape
@@ -44,48 +33,40 @@ class WCBLGExtraction:
         remainder = self.max_capacity_per_subband % block_number
         self.max_capacity_per_subband -= remainder
 
-    def prepare_algorith(self):
-        data_bin = string_to_bin(self.data)
-        data_len = len(data_bin)
+    def prepare_algorithm(self):
+        self.adjust_max_capacity_per_subband()
+        if self.data_len > 3 * self.max_capacity_per_subband:
+            print("not enough space in picture")
+            return False
 
         block_number = self.NumRows * self.NumCols
-        self.adjust_max_capacity_per_subband()
 
-        self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype)  # tu mozno dam dtype=image.dtype
-
-        if data_len <= self.max_capacity_per_subband:
-            # if not dividible
-            self.data_bin_HH = ''
+        if self.data_len <= self.max_capacity_per_subband:
+            self.data_bin_HH = np.zeros(self.len_data_HH, dtype=int)
             self.len_data_HH = self.data_len
             self.len_data_HH_block = self.len_data_HH // block_number
             return True
         if self.data_len <= 2 * self.max_capacity_per_subband:
-            self.data_bin_HH = ''
             self.len_data_HH = self.max_capacity_per_subband
-            self.len_data_HH_block = self.len_data_HH // block_number
-            self.data_bin_HL = ''
-            self.data_bin_HL = self.data_len - self.max_capacity_per_subband
-            # if image size and block size are nicely choosen this is not necessary
-            self.data_bin_HL, self.len_data_HL = self.fill_data_for_block_number(self.data_bin_HL, self.len_data_HL)
-            self.len_data_HL_block = self.len_data_HL // block_number
-            return True
-        if data_len <= 3 * self.max_capacity_per_subband:
-            self.data_bin_HH = ''
-            self.len_data_HH = self.max_capacity_per_subband
+            self.data_bin_HH = np.zeros(self.len_data_HH, dtype=int)
             self.len_data_HH_block = self.len_data_HH // block_number
 
-            self.data_bin_HL = ''
-            #self.len_data_HL = self.max_capacity_per_subband
+            self.len_data_HL = self.data_len - self.max_capacity_per_subband
+            self.data_bin_HL = np.zeros(self.len_data_HL, dtype=int)
             self.len_data_HL_block = self.len_data_HL // block_number
 
-            self.data_bin_LH = ''
-            self.len_data_LH = self.data_len - 2 * self.max_capacity_per_subband
-            #self.data_bin_LH, self.len_data_LH = self.fill_data_for_block_number(self.data_bin_LH, self.len_data_LH)
-            self.len_data_LH_block = self.len_data_LH // block_number
             return True
-        if self.data_len > 3 * self.max_capacity_per_subband:
-            print("Not enough space")
-            return False
+        self.len_data_HH = self.max_capacity_per_subband
+        self.data_bin_HH = np.zeros(self.len_data_HH, dtype=int)
+        self.len_data_HH_block = self.len_data_HH // block_number
+
+        self.len_data_HL = self.max_capacity_per_subband
+        self.data_bin_HL = np.zeros(self.len_data_HL, dtype=int)
+        self.len_data_HL_block = self.len_data_HL // block_number
+
+        self.len_data_LH = self.data_len - 2 * self.max_capacity_per_subband
+        self.data_bin_LH = np.zeros(self.len_data_LH, dtype=int)
+        self.len_data_LH_block = self.len_data_LH // block_number
         return True
 
     def extract_data(self):
@@ -98,33 +79,44 @@ class WCBLGExtraction:
 
                 # Wavelet transformation
                 if self.use_iwt:
-                    LLS, LHS, HLS, HHS = IWT_version_2(stego_k, self.eng)
+                    LL, LHS, HLS, HHS = IWT_version_2(stego_k, self.eng)
                 else:
-                    LLS, LHS, HLS, HHS = DWT_version_2(stego_k, self.eng)
+                    LL, LHS, HLS, HHS = DWT_version_2(stego_k, self.eng)
 
                 # Selection of Embeding Location
-                can_loc_HH = self.selEmbLoc(HHS)
-                data_k_HH = self.extraction(k, HHS, can_loc_HH)
+                can_loc_HH = self.selEmbLoc(HHS, self.len_data_HH_block)
+                data_k_HH = self.extraction(k, HHS, can_loc_HH, self.len_data_HH_block)
+                self.setSubBl(k, data_k_HH, self.len_data_HH_block, self.data_bin_HH)
 
                 if self.data_bin_HL is not None:
-                    can_loc_HL = self.selEmbLoc(HLS)
-                    data_k_HL = self.extraction(k, HHS, can_loc_HL)
+                    can_loc_HL = self.selEmbLoc(HLS, self.len_data_HL_block)
+                    data_k_HL = self.extraction(k, HLS, can_loc_HL, self.len_data_HL_block)
+                    self.setSubBl(k, data_k_HL, self.len_data_HL_block, self.data_bin_HL)
 
                 if self.data_bin_LH is not None:
-                    can_loc_LH = self.selEmbLoc(LHS)
-                    data_k_LH = self.extraction(k, HHS, can_loc_LH)
+                    can_loc_LH = self.selEmbLoc(LHS, self.len_data_LH_block)
+                    data_k_LH = self.extraction(k, LHS, can_loc_LH, self.len_data_LH_block)
+                    self.setSubBl(k, data_k_LH, self.len_data_LH_block, self.data_bin_LH)
 
 
-                # Set sub block
-                self.setSubBl(k, data_k)
+                # # Set sub block
+                # self.setSubBl(k, data_k_HH)
 
                 k += 1
 
-        self.message = bin_to_string(self.data)
-        for i in self.message:
-            print(i + '\n')
+        data = self.data_bin_HH
+        if self.data_bin_HL is not None:
+            data = np.append(data, self.data_bin_HL)
 
-        return self.message
+        if self.data_bin_LH is not None:
+            data = np.append(data, self.data_bin_LH)
+
+        message = bin_to_string(data)
+        # for i in self.message:
+        #     print(i + '\n')
+
+        return message
+
 
     def setSubBl(self, k, data_k, len_data_subband, data_subband):
         start_index = (k - 1) * len_data_subband
@@ -138,12 +130,12 @@ class WCBLGExtraction:
         end_j = (j + 1) * self.bs
         return self.stego_image[start_i: end_i, start_j: end_j]
 
-    def selEmbLoc(self, subband_s):
+    def selEmbLoc(self, subband_s, len_data_subband):
         seed(self.key)
 
         n, m = subband_s.shape
 
-        subband_s_prim = np.zeros((n, m))
+        subband_s_prim = np.zeros((n, m), dtype=int)
         for i, item in enumerate(subband_s):
             for j, num in enumerate(item):
                 r = random.random()
@@ -155,7 +147,7 @@ class WCBLGExtraction:
                         subband_s_prim[i, j] = num_int + 1    # previously here was num instead of num_int
                     else:
                         subband_s_prim[i, j] = num_int - 1    # previously here was num instead of num_int
-        edges = np.zeros((n, m))
+        edges = np.zeros((n, m), dtype=int)
         for i in range(n):
             for j in range(m):
                 for x in range(-1, 2):
@@ -166,7 +158,7 @@ class WCBLGExtraction:
         edges_array = edges.flatten()
         edges_array[::-1].sort()
 
-        element_number = math.ceil(self.mul * self.len_data)
+        element_number = math.ceil(self.mul * len_data_subband)
 
         treshold = edges_array[element_number - 1]
 
@@ -184,18 +176,18 @@ class WCBLGExtraction:
             if break_loop:
                 break
 
-        return can_loc,  # returns locations in HH with hihgest edge and HHPrim(like HH but all even)
+        return can_loc  # returns locations in HH with hihgest edge and HHPrim(like HH but all even)
 
     def extraction(self, k, subband_s, can_loc, len_data_subband):
-        data_k = np.zeros(self.len_data)
+        data_k = np.zeros(len_data_subband, dtype=int)
 
         #best_seed_k = self.best_seed[k * 32: (k + 1) * 32]      #treba srediti keys da bi znali kako da ih saljemo(kao lsitu ili str)
         best_seed_k = self.best_seed[k - 1]
         #np.random.seed(best_seed_k)
         seed(int(best_seed_k))
-        element_number = math.ceil(self.mul * self.len_data)
+        element_number = math.ceil(self.mul * len_data_subband)
         #seq = np.random.choice(range(int(self.mul * self.len_data)), size=self.len_data, replace=False) #dodati ovo u embedding
-        seq = random.sample(range(0, element_number), self.len_data)
+        seq = random.sample(range(0, element_number), len_data_subband)
         best_loc = [can_loc[i] for i in seq]
 
         d = 0

@@ -15,11 +15,11 @@ def encrypt(image_path, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt):
     cover_image = convert_image_to_datatype_matlab(cover_image, "uint16", eng)
 
     # read message
-    data = read_message("message/Lorem Ipsum 1000B.txt")
+    data = read_message("message/Lorem Ipsum 8000B.txt")
 
     # calling embedding algorithm
     wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, Bs, mul, Npop, Pc, Pm, Epoch, eng, use_iwt)
-    if not wcblgEmbedding.prepare_algorith():
+    if not wcblgEmbedding.prepare_algorithm():
         print("embedding went wrong")
     bestSeeds, stego_image = wcblgEmbedding.wcblg()
     print(bestSeeds)
@@ -38,11 +38,12 @@ def decrypt(key, Bs, mul, eng, use_iwt):
     bestSeeds = read_seeds_from_file("seeds_1.txt")
 
     # read message and get length in bin
-    data = read_message("message/Lorem Ipsum 1000B.txt")
+    data = read_message("message/Lorem Ipsum 8000B.txt")
     data_bin = string_to_bin(data)
 
     # calling extraction algorithm
     wcblgExtraction = WCBLGExtraction(stego_image, key, Bs, mul, bestSeeds, len(data_bin), eng, use_iwt)
+    wcblgExtraction.prepare_algorithm()
     hidden_message = wcblgExtraction.extract_data()
 
     print(hidden_message)
