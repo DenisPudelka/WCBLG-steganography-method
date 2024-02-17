@@ -4,8 +4,9 @@ from ui.embed import EmbedMode
 from ui.extract import ExtractMode
 
 class GUI(tk.Tk):
-    def __init__(self):
+    def __init__(self, eng):
         super().__init__()
+        self.eng = eng
         self.title("Steganography Application")
         self.init_widgets()
 
@@ -21,7 +22,7 @@ class GUI(tk.Tk):
         self.extract_button_mode.pack(side=tk.RIGHT, padx=10, pady=10)
 
     def open_embed_window(self):
-        EmbedMode()
+        EmbedMode(self.eng)
 
     def open_extract_window(self):
         ExtractMode()
