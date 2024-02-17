@@ -74,8 +74,8 @@ def write_seeds_to_file(seeds, file_name, directory='seeds_keys'):
         file.write('\n'.join(str(seed) for seed in seeds))
 
 
-def read_seeds_from_file(file_name, directory='seeds_keys'):
-    file_path = os.path.join(directory, file_name)
+def read_seeds_from_file(file_name):
+    file_path = os.path.join(file_name)
 
     if not os.path.exists(file_path):
         return []
