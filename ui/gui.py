@@ -25,4 +25,4 @@ class GUI(tk.Tk):
         EmbedMode(self.eng)
 
     def open_extract_window(self):
-        ExtractMode()
+        ExtractMode(self.eng)
