@@ -74,6 +74,21 @@ def write_seeds_to_file(seeds, file_name, directory='seeds_keys'):
         file.write('\n'.join(str(seed) for seed in seeds))
 
 
+def save_hidden_message(message, file_path):
+    try:
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+
+        file_path = os.path.join(file_path, "hidden_message.txt")
+
+        with open(file_path, 'w') as file:
+            file.write(message)
+
+        print(f"Hidden message successfully saved to {file_path}")
+    except Exception as e:
+        print(f"Error saving hidden message: {e}")
+
+
 def read_seeds_from_file(file_name):
     file_path = os.path.join(file_name)
 

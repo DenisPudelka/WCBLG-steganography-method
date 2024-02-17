@@ -173,4 +173,5 @@ class ExtractMode:
 
     def finalize_embedding(self, hidden_message):
         print(hidden_message)
+        save_hidden_message(hidden_message, "hidden_message/")
         self.progress_window.destroy()
