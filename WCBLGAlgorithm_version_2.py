@@ -59,64 +59,6 @@ class WCBLGAlgorithm:
         data_bin += "0" * fill_data_len
         return data_bin, data_len
 
-    # def prepare_algorith(self):
-    #     data_bin = string_to_bin(self.data)
-    #     data_len = len(data_bin)
-    #
-    #     block_number = self.NumRows * self.NumCols
-    #     self.adjust_max_capacity_per_subband()
-    #     # if numbers are not divisible , reminder will be lost which means part of message is not embeded, or we fill message with spaces
-    #     # if data_len % block_number != 0:
-    #     #     pass
-    #     # self.len_data = data_len // block_number☺
-    #
-    #     self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype)  # tu mozno dam dtype=image.dtype
-    #
-    #     if data_len <= self.max_capacity_per_subband:
-    #         # if not dividible
-    #         self.data_bin_HH = data_bin
-    #         self.len_data_HH = data_len
-    #         self.len_data_HH_block = self.len_data_HH // block_number
-    #         return True
-    #     if data_len <= 2 * self.max_capacity_per_subband:
-    #         self.data_bin_HH = data_bin[0: self.max_capacity_per_subband]
-    #         self.len_data_HH = self.max_capacity_per_subband
-    #         self.len_data_HH_block = self.len_data_HH // block_number
-    #         if self.len_data_HH % block_number != 0:
-    #             print("max len data per block not divible by block number")
-    #             return False
-    #         self.data_bin_HL = data_bin[self.max_capacity_per_subband:]
-    #         self.data_bin_HL = data_len - self.max_capacity_per_subband
-    #         # if image size and block size are nicely choosen this is not necessary
-    #         self.data_bin_HL, self.len_data_HL = self.fill_data_for_block_number(self.data_bin_HL, self.len_data_HL)
-    #         self.len_data_HL_block = self.len_data_HL // block_number
-    #         if self.len_data_HL % block_number != 0:
-    #             print("max len data per block not divible by block number")
-    #             return False
-    #         return True
-    #     if data_len <= 3 * self.max_capacity_per_subband:
-    #         self.data_bin_HH = data_bin[0: self.max_capacity_per_subband]
-    #         self.len_data_HH = self.max_capacity_per_subband
-    #         self.len_data_HH_block = self.len_data_HH // block_number
-    #         if self.len_data_HH % block_number != 0:
-    #             print("max len data per block not divible by block number")
-    #             return False
-    #         self.data_bin_HL = data_bin[self.max_capacity_per_subband: 2 * self.max_capacity_per_subband]
-    #         self.len_data_HL = self.max_capacity_per_subband
-    #         self.len_data_HL_block = self.len_data_HL // block_number
-    #         if self.len_data_HL % block_number != 0:
-    #             print("max len data per block not divible by block number")
-    #             return False
-    #         self.data_bin_LH = data_bin[2 * self.max_capacity_per_subband:]
-    #         self.len_data_LH = data_len - 2 * self.max_capacity_per_subband
-    #         self.data_bin_LH, self.len_data_LH = self.fill_data_for_block_number(self.data_bin_LH, self.len_data_LH)
-    #         self.len_data_LH_block = self.len_data_LH // block_number
-    #         return True
-    #     if data_len > 3 * self.max_capacity_per_subband:
-    #         print("Not enough space")
-    #         return False
-    #     return True
-
     def prepare_algorithm(self):
         data_bin = string_to_bin(self.data)
         data_len = len(data_bin)

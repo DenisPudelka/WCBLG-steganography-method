@@ -16,13 +16,13 @@ class WCBLGExtraction:
         self.use_iwt = use_iwt
         self.m, self.n = self.stego_image.shape
         self.max_capacity_per_subband = int(self.m * self.n / (4 * self.mul))
-        self.data_bin_HH = None  # binary data for HH subband
+        self.data_bin_HH = None
         self.data_bin_HL = None
         self.data_bin_LH = None
-        self.len_data_HH = 0  # len of binary data
+        self.len_data_HH = 0
         self.len_data_HL = 0
         self.len_data_LH = 0
-        self.len_data_HH_block = 0  # len of binary data per block
+        self.len_data_HH_block = 0
         self.len_data_HL_block = 0
         self.len_data_LH_block = 0
         self.NumRows = self.m // self.bs
@@ -42,7 +42,7 @@ class WCBLGExtraction:
         block_number = self.NumRows * self.NumCols
 
         if self.data_len <= self.max_capacity_per_subband:
-            self.data_bin_HH = np.zeros(self.len_data_HH, dtype=int)
+            self.data_bin_HH = np.zeros(self.data_len, dtype=int)
             self.len_data_HH = self.data_len
             self.len_data_HH_block = self.len_data_HH // block_number
             return True
@@ -98,10 +98,6 @@ class WCBLGExtraction:
                     data_k_LH = self.extraction(k, LHS, can_loc_LH, self.len_data_LH_block)
                     self.setSubBl(k, data_k_LH, self.len_data_LH_block, self.data_bin_LH)
 
-
-                # # Set sub block
-                # self.setSubBl(k, data_k_HH)
-
                 k += 1
 
         data = self.data_bin_HH
@@ -112,11 +108,8 @@ class WCBLGExtraction:
             data = np.append(data, self.data_bin_LH)
 
         message = bin_to_string(data)
-        # for i in self.message:
-        #     print(i + '\n')
 
         return message
-
 
     def setSubBl(self, k, data_k, len_data_subband, data_subband):
         start_index = (k - 1) * len_data_subband
@@ -141,12 +134,12 @@ class WCBLGExtraction:
                 r = random.random()
                 num_int = int(round(num))
                 if num_int % 2 == 0:
-                    subband_s_prim[i, j] = num_int    # previously here was num instead of num_int
+                    subband_s_prim[i, j] = num_int
                 else:
                     if r <= 0.5:
-                        subband_s_prim[i, j] = num_int + 1    # previously here was num instead of num_int
+                        subband_s_prim[i, j] = num_int + 1
                     else:
-                        subband_s_prim[i, j] = num_int - 1    # previously here was num instead of num_int
+                        subband_s_prim[i, j] = num_int - 1
         edges = np.zeros((n, m), dtype=int)
         for i in range(n):
             for j in range(m):
@@ -167,7 +160,7 @@ class WCBLGExtraction:
         break_loop = False
         for i in range(n):
             for j in range(m):
-                if edges[i, j] >= treshold:  # mozda udje vise indexa u can_loc jer moze par njih biti == T
+                if edges[i, j] >= treshold:
                     can_loc.append((i, j))
                     elements_found += 1
                 if elements_found == element_number:
@@ -176,17 +169,15 @@ class WCBLGExtraction:
             if break_loop:
                 break
 
-        return can_loc  # returns locations in HH with hihgest edge and HHPrim(like HH but all even)
+        return can_loc
 
     def extraction(self, k, subband_s, can_loc, len_data_subband):
         data_k = np.zeros(len_data_subband, dtype=int)
-
-        #best_seed_k = self.best_seed[k * 32: (k + 1) * 32]      #treba srediti keys da bi znali kako da ih saljemo(kao lsitu ili str)
         best_seed_k = self.best_seed[k - 1]
-        #np.random.seed(best_seed_k)
+
         seed(int(best_seed_k))
         element_number = math.ceil(self.mul * len_data_subband)
-        #seq = np.random.choice(range(int(self.mul * self.len_data)), size=self.len_data, replace=False) #dodati ovo u embedding
+
         seq = random.sample(range(0, element_number), len_data_subband)
         best_loc = [can_loc[i] for i in seq]
 
