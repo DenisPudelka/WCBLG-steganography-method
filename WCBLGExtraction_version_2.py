@@ -5,7 +5,7 @@ import math
 from Utils import *
 
 class WCBLGExtraction:
-    def __init__(self, stego_image, key, bs, mul, best_seed, data_len, eng, use_iwt):
+    def __init__(self, stego_image, key, bs, mul, best_seed, data_len, eng, use_iwt, progress_callback=None):
         self.stego_image = stego_image
         self.key = key
         self.bs = bs
@@ -27,6 +27,7 @@ class WCBLGExtraction:
         self.len_data_LH_block = 0
         self.NumRows = self.m // self.bs
         self.NumCols = self.n // self.bs
+        self.progress_callback = progress_callback
 
     def adjust_max_capacity_per_subband(self):
         block_number = self.NumRows * self.NumCols
@@ -98,6 +99,8 @@ class WCBLGExtraction:
                     data_k_LH = self.extraction(k, LHS, can_loc_LH, self.len_data_LH_block)
                     self.setSubBl(k, data_k_LH, self.len_data_LH_block, self.data_bin_LH)
 
+                if self.progress_callback:
+                    self.progress_callback(k)
                 k += 1
 
         data = self.data_bin_HH

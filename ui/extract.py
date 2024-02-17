@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from tkinter import *
+from tkinter import ttk
 from Utils import *
 from WCBLGExtraction_version_2 import WCBLGExtraction
 import tifffile
+import threading
 import mylibpkg
 
 class ExtractMode:
@@ -105,7 +106,27 @@ class ExtractMode:
             self.bestSeeds_file_label.config(text=file_path)
             self.bestSeeds_path = filename
 
+    def show_progress_window(self, total_iterations):
+        self.progress_window = tk.Toplevel(self.window)
+        self.progress_window.title("Embedding Progress")
+        self.progress_window.geometry("400x100")  # Adjust size as needed
+        self.progress_window.resizable(False, False)
+
+        # Creating a progress bar
+        self.progress = ttk.Progressbar(self.progress_window, orient="horizontal", length=300, mode="determinate",maximum=total_iterations)
+        self.progress.pack(pady=20, padx=20)
+
+        # Starting values of progress bar
+        self.progress["value"] = 0
+
+
     def execute_extraction(self):
+        self.prepare_extraction()
+
+        # Creating separate thread for extraction, so I can on separate thread display progress bar
+        threading.Thread(target=self.run_extracction, daemon=True).start()
+
+    def prepare_extraction(self):
         key = int(self.key_entry.get())
         bs = int(self.bs_entry.get())
         mul = float(self.mul_entry.get())
@@ -113,22 +134,43 @@ class ExtractMode:
 
         use_iwt = True
 
-        # read image
         stego_image = tifffile.imread("stego_image/" + self.image_path)
 
         # read best seeds
         bestSeeds = read_seeds_from_file("seeds_keys/" + self.bestSeeds_path)
 
-        # read message and get length in bin
-        # data = read_message("message/Lorem Ipsum 1000B.txt")
-        # data_bin = string_to_bin(data)
-        # data_len = len(data_bin)
-
         data_len = len_data * 8
 
-        # calling extraction algorithm
-        wcblgExtraction = WCBLGExtraction(stego_image, key, bs, mul, bestSeeds, data_len, self.eng, use_iwt)
-        wcblgExtraction.prepare_algorithm()
-        hidden_message = wcblgExtraction.extract_data()
+        total_iterations = (stego_image.shape[1] / bs) + 1
 
+        self.show_progress_window(total_iterations)
+
+        self.extracting_params = (key, bs, mul, use_iwt, stego_image, bestSeeds, data_len)
+
+    def run_extracction(self):
+        # This method runs in a separate thread and contains the embedding logic
+        key, bs, mul, use_iwt, stego_image, bestSeeds, data_len = self.extracting_params
+
+        try:
+            wcblgExtraction = WCBLGExtraction(stego_image, key, bs, mul, bestSeeds, data_len, self.eng, use_iwt, progress_callback=self.update_progress)
+            wcblgExtraction.prepare_algorithm()
+            hidden_message = wcblgExtraction.extract_data()
+
+            self.window.after(0, self.finalize_embedding, hidden_message)
+        except Exception as e:
+            print(f"An error occurred during embedding: {e}")
+            # Ensure the progress window is closed even if there's an error
+            self.window.after(0, self.progress_window.destroy)
+
+    def update_progress(self, current_iteration):
+        # using after to safely update the progress bar from the main thread
+        self.window.after(0, lambda: self.set_progress(current_iteration))
+
+    def set_progress(self, value):
+        # directly setting the progress bar's value
+        self.progress["value"] = value
+        self.progress_window.update_idletasks()  # ensuring the GUI is updated
+
+    def finalize_embedding(self, hidden_message):
         print(hidden_message)
+        self.progress_window.destroy()
