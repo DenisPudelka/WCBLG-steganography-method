@@ -11,7 +11,7 @@ import tifffile
 
 
 class WCBLGAlgorithm:
-    def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch, eng, use_iwt):
+    def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch, eng, use_iwt, progress_callback=None):
         self.cover_image = cover_path
         self.stego_image = None
         self.data = data
@@ -42,6 +42,7 @@ class WCBLGAlgorithm:
         self.len_data_LH_block = 0
         self.NumRows = self.m // self.BS
         self.NumCols = self.n // self.BS
+        self.progress_callback = progress_callback
 
 
     def adjust_max_capacity_per_subband(self):
@@ -183,11 +184,20 @@ class WCBLGAlgorithm:
 
                 # Spajanje blokova
                 self.SetSubBl(stego_k, i, j)
+
+                if self.progress_callback:
+                    self.progress_callback(k)
+
                 print('Iteracija: ', k)
                 k += 1
 
+
         return BestSeeds, self.stego_image
 
+    # Update progress bar method
+    def update_progress_bar(self, increment):
+        self.progress["value"] += increment
+        self.window.update_idletasks()
 
     def SelEmbLocForSubband(self, subband, len_data_block):
         seed(self.key)

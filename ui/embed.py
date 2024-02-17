@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from tkinter import *
+from tkinter import ttk
 from Utils import *
 from WCBLGAlgorithm_version_2 import WCBLGAlgorithm
 import tifffile
+import threading
 import mylibpkg
+
 
 
 class EmbedMode:
@@ -14,7 +16,7 @@ class EmbedMode:
         self.message_path = ''
         self.window = tk.Toplevel()
         self.window.geometry("500x700")
-        self.window.resizable(False, False)
+        self.window.resizable(True, False)
         self.window.title("Embed Mode")
         self.init_widgets()
 
@@ -31,8 +33,7 @@ class EmbedMode:
         self.parameters_frame = tk.LabelFrame(self.window_frame)
         self.parameters_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        tk.Label(self.parameters_frame, text="Parameters", font=("Helvetica", 10)).grid(row=0, column=1, columnspan=2,
-                                                                                        pady=10)
+        tk.Label(self.parameters_frame, text="Parameters", font=("Helvetica", 10)).grid(row=0, column=1, columnspan=2,pady=10)
 
         tk.Label(self.parameters_frame, text="Key: ").grid(row=1, column=0, sticky="e")
         self.key_entry = tk.Entry(self.parameters_frame)
@@ -108,7 +109,7 @@ class EmbedMode:
         self.message_file_label.pack(side="left")
 
     def select_image_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tiff")])
+        file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tiff;*.tif")])
         if file_path:
             filename = os.path.basename(file_path)
             self.image_file_label.config(text=file_path)
@@ -121,7 +122,26 @@ class EmbedMode:
             self.message_file_label.config(text=file_path)
             self.message_path = filename
 
+    def show_progress_window(self, total_iterations):
+        self.progress_window = tk.Toplevel(self.window)
+        self.progress_window.title("Embedding Progress")
+        self.progress_window.geometry("400x100")  # Adjust size as needed
+        self.progress_window.resizable(False, False)
+
+        # Creating a progress bar
+        self.progress = ttk.Progressbar(self.progress_window, orient="horizontal", length=300, mode="determinate",maximum=total_iterations)
+        self.progress.pack(pady=20, padx=20)
+
+        # Starting values of progress bar
+        self.progress["value"] = 0
+
     def execute_embedding(self):
+        self.prepare_embedding()
+
+        # Creating separate thread for embedding, so I can on separate thread display progress bar
+        threading.Thread(target=self.run_embedding, daemon=True).start()
+
+    def prepare_embedding(self):
         key = int(self.key_entry.get())
         bs = int(self.bs_entry.get())
         mul = float(self.mul_entry.get())
@@ -130,6 +150,7 @@ class EmbedMode:
         pm = float(self.mutation_entry.get())
         epoch = int(self.epoch_entry.get())
 
+        # hardcoded to always use IWT transformation
         use_iwt = True
 
         # read image
@@ -144,14 +165,42 @@ class EmbedMode:
         # read message
         data = read_message('message/' + self.message_path)
 
-        # calling embedding algorithm
-        wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, bs, mul, pop_size, pc, pm, epoch, self.eng, use_iwt)
-        if not wcblgEmbedding.prepare_algorithm():
-            print("embedding went wrong")
-        bestSeeds, stego_image = wcblgEmbedding.wcblg()
-        print(bestSeeds)
+        total_iterations = (image_original.shape[1] / bs) + 1
 
-        # save seeds, cover image and stego image
+        # showing progress bar
+        self.show_progress_window(total_iterations)
+
+        # preparing data for method run_embedding that runs on separate thread
+        self.embedding_params = (key, bs, mul, pop_size, pc, pm, epoch, use_iwt, cover_image, data)
+
+    def run_embedding(self):
+        # This method runs in a separate thread and contains the embedding logic
+        key, bs, mul, pop_size, pc, pm, epoch, use_iwt, cover_image, data = self.embedding_params
+
+        try:
+            wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, bs, mul, pop_size, pc, pm, epoch, self.eng, use_iwt, progress_callback=self.update_progress)
+            if not wcblgEmbedding.prepare_algorithm():
+                print("embedding went wrong")
+            bestSeeds, stego_image = wcblgEmbedding.wcblg()
+            print(bestSeeds)
+
+            self.window.after(0, self.finalize_embedding, bestSeeds, stego_image, cover_image)
+        except Exception as e:
+            print(f"An error occurred during embedding: {e}")
+            # Ensure the progress window is closed even if there's an error
+            self.window.after(0, self.progress_window.destroy)
+
+    def update_progress(self, current_iteration):
+        # using after to safely update the progress bar from the main thread
+        self.window.after(0, lambda: self.set_progress(current_iteration))
+
+    def set_progress(self, value):
+        # directly setting the progress bar's value
+        self.progress["value"] = value
+        self.progress_window.update_idletasks()  # ensuring the GUI is updated
+
+    def finalize_embedding(self, bestSeeds, stego_image, cover_image):
         write_seeds_to_file(bestSeeds, "seeds_1.txt")
         save_image(cover_image, "cover_image/" + self.image_path)
         save_image(stego_image, "stego_image/" + self.image_path)
+        self.progress_window.destroy()
