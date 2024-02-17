@@ -62,7 +62,7 @@ class EmbedMode:
         tk.Label(self.parameters_frame, text="Mutation (Pm): ").grid(row=6, column=0, sticky="e")
         self.mutation_entry = tk.Entry(self.parameters_frame)
         self.mutation_entry.grid(row=6, column=1, sticky="w", pady=5)
-        self.mutation_entry.insert(0, " 0.2")
+        self.mutation_entry.insert(0, "0.2")
 
         tk.Label(self.parameters_frame, text="Epoch: ").grid(row=7, column=0, sticky="e")
         self.epoch_entry = tk.Entry(self.parameters_frame)
