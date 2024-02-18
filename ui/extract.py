@@ -1,11 +1,11 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 from tkinter import ttk
-from Utils import *
-from WCBLGExtraction_version_2 import WCBLGExtraction
+from stego.Utils import *
+from stego.WCBLGExtraction_version_2 import WCBLGExtraction
 import tifffile
 import threading
-import mylibpkg
+
 
 class ExtractMode:
     def __init__(self, eng):

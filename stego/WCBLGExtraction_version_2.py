@@ -2,7 +2,7 @@ from random import *
 import random
 from random import seed
 import math
-from Utils import *
+from stego.Utils import *
 
 class WCBLGExtraction:
     def __init__(self, stego_image, key, bs, mul, best_seed, data_len, eng, use_iwt, progress_callback=None):

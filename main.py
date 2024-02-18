@@ -1,4 +1,4 @@
-from Utils import *
+from stego.Utils import *
 from WCBLGAlgorithm import WCBLGAlgorithm
 from WCBLGExtraction import WCBLGExtraction
 import tifffile

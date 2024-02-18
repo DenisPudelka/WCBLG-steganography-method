@@ -1,12 +1,10 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 from tkinter import ttk
-from Utils import *
-from WCBLGAlgorithm_version_2 import WCBLGAlgorithm
+from stego.Utils import *
+from stego.WCBLGAlgorithm_version_2 import WCBLGAlgorithm
 import tifffile
 import threading
-import mylibpkg
-
 
 
 class EmbedMode:

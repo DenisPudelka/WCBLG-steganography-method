@@ -1,6 +1,6 @@
-from Utils import *
-from WCBLGAlgorithm_version_2 import WCBLGAlgorithm
-from WCBLGExtraction_version_2 import WCBLGExtraction
+from stego.Utils import *
+from stego.WCBLGAlgorithm_version_2 import WCBLGAlgorithm
+from stego.WCBLGExtraction_version_2 import WCBLGExtraction
 from ui.gui import GUI
 import tifffile
 import mylibpkg

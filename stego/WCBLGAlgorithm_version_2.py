@@ -1,13 +1,10 @@
 from random import *
 import random
 from random import seed
-import numpy as np
 import math
-import cv2
-from Utils import *
-from Embedding_version_2 import embedding
-from GeneticAlgorithm_version_2 import GeneticAlgorithm
-import tifffile
+from stego.Utils import *
+from stego.Embedding_version_2 import embedding
+from stego.GeneticAlgorithm_version_2 import GeneticAlgorithm
 
 
 class WCBLGAlgorithm:
@@ -128,11 +125,11 @@ class WCBLGAlgorithm:
 
         for i in range(self.NumRows):
             for j in range(self.NumCols):
-                # Extrakcia blokova
+                # Extraction of blocks
                 # prepares covek_k
                 self.GetSubBlCoverK(i, j)
 
-                # DWT or IWT transformacija
+                # DWT or IWT transformation
                 if self.use_iwt:
                     self.LL, self.LH, self.HL, self.HH = IWT_version_2(self.cover_k, self.eng)
                 else:
@@ -169,20 +166,20 @@ class WCBLGAlgorithm:
                 bestseedk = genericAlgorithm.findBestKey()
                 BestSeeds.append(bestseedk)
 
-                # Embedovanje data
+                # Data embeding
                 HHS = embedding(self.HH, HH_prim, can_loc_HH, bestseedk, data_k_HH, self.mul, HH_keys, self.use_iwt)
                 if data_k_HL is not None:
                     HLS = embedding(self.HL, HL_prim, can_loc_HL, bestseedk, data_k_HL, self.mul, HL_keys, self.use_iwt)
                 if data_k_LH is not None:
                     LHS = embedding(self.LH, LH_prim, can_loc_LH, bestseedk, data_k_LH, self.mul, LH_keys, self.use_iwt)
 
-                # IDWT or IIWT transformacija
+                # IDWT or IIWT transformation
                 if self.use_iwt:
                     stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
                 else:
                     stego_k = IDWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
 
-                # Spajanje blokova
+                # Putting blocks together
                 self.SetSubBl(stego_k, i, j)
 
                 if self.progress_callback:
@@ -225,7 +222,7 @@ class WCBLGAlgorithm:
                             continue
                         edges[i, j] += abs(subband_prim[i + x, j + y]) # edges[i, j] += abs(subband_prim[i + x + 1, j + y + 1])
         edges_array = edges.flatten()
-        # edges_array[::-1].sort() ovo moze da radi problem jer nikde necuvamo sortirani array
+        # edges_array[::-1].sort() this could cause a problem becaue we do not hold values of sorted array
         edges_array.sort()
         edges_array = edges_array[::-1]
 

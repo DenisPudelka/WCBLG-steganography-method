@@ -3,7 +3,7 @@ import random
 from random import seed
 import math
 import struct
-from Utils import *
+from stego.Utils import *
 
 
 def embedding(subband, subband_prim, can_loc, best_seed, data_k, mul, subband_keys, use_iwt):
@@ -11,7 +11,7 @@ def embedding(subband, subband_prim, can_loc, best_seed, data_k, mul, subband_ke
     lenData = len(data_k)
     element_number = math.ceil(mul * lenData)
     seq = random.sample(range(0, element_number), lenData)
-    # best_loc = can_loc[seq]  # ovo je matrica parova indexa sekvence [(1,2),(2,2)]
+    # best_loc = can_loc[seq]  # this is a matrix of pair sekvence [(1,2),(2,2)]
     if element_number != len(can_loc):
         raise Exception("element number and can_loc are not the same length")
     best_loc = [can_loc[i] for i in seq]

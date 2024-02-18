@@ -1,30 +1,36 @@
-import cProfile
 from random import *
 import random
-import numpy as np
 import math
-from Embedding import embedding
-from Utils import *
+from stego.Embedding_version_2 import embedding
+from stego.Utils import *
 
 
 class GeneticAlgorithm:
-    def __init__(self, n_pop, pc, pm, epoch, can_loc, cover_k, LL, LH, HL, HH, HHprim, data_k, mul, key, HH_keys, eng, use_iwt):
+    def __init__(self, n_pop, pc, pm, epoch, can_loc_HH, can_loc_HL, can_loc_LH, cover_k, LL, LH, HL, HH,  HHprim, HLprim, LHprim, data_k_HH, data_k_HL, data_k_LH, mul, key, HH_keys, HL_keys, LH_keys, eng, use_iwt):
         self.n_pop = n_pop
         self.pc = pc
         self.pm = pm
         self.epoch = epoch
-        self.can_loc = can_loc
+        self.can_loc_HH = can_loc_HH
+        self.can_loc_HL = can_loc_HL
+        self.can_loc_LH = can_loc_LH
         self.cover_k = cover_k
         self.LL = LL
         self.LH = LH
         self.HL = HL
         self.HH = HH
         self.HHprim = HHprim
-        self.data_k = data_k
+        self.HLprim = HLprim
+        self.LHprim = LHprim
+        self.data_k_HH = data_k_HH
+        self.data_k_HL = data_k_HL
+        self.data_k_LH = data_k_LH
         self.pop = np.random.randint(1, high=(2 ** 31) - 1, size=self.n_pop)
         self.mul = mul
         self.key = key
         self.HH_keys = HH_keys
+        self.HL_keys = HL_keys
+        self.LH_keys = LH_keys
         self.eng = eng
         self.use_iwt = use_iwt
 
@@ -39,7 +45,6 @@ class GeneticAlgorithm:
             pop_dict = {key: 0 for key in self.pop}
             self.fitness_population(pop_dict)
             self.pop = self.selection(pop_dict)
-            #cProfile.runctx('self.fitness_population(pop_dict)', globals(), locals())
 
         return self.pop[0]
 
@@ -94,11 +99,17 @@ class GeneticAlgorithm:
             pop_dict[chromo] = self.fitness(chromo)
 
     def fitness(self, chromo):
-        HHS = embedding(self.HH, self.HHprim, self.can_loc, chromo, self.data_k, self.mul, self.HH_keys, self.use_iwt)
+        HHS = embedding(self.HH, self.HHprim, self.can_loc_HH, chromo, self.data_k_HH, self.mul, self.HH_keys, self.use_iwt)
+        HLS = self.HL
+        LHS = self.LH
+        if self.HLprim is not None:
+            HLS = embedding(self.HL, self.HLprim, self.can_loc_HL, chromo, self.data_k_HL, self.mul, self.HL_keys, self.use_iwt)
+        if self.LHprim is not None:
+            LHS = embedding(self.LH, self.LHprim, self.can_loc_LH, chromo, self.data_k_LH, self.mul, self.LH_keys, self.use_iwt)
         if self.use_iwt:
-            stego_k = IIWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+            stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
         else:
-            stego_k = IDWT_version_2(self.LL, self.LH, self.HL, HHS, self.eng)
+            stego_k = IDWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
         return self.picture_fitness(self.cover_k, stego_k)
 
     def picture_fitness(self, cover, stego_image):
