@@ -11,7 +11,7 @@ class GUI(tk.Tk):
         self.init_widgets()
 
     def init_widgets(self):
-        self.resizable(False,False)
+        self.resizable(False, False)
         self.main_freme = tk.LabelFrame(self, text="Steganography Mode", padx=25, pady=25)
         self.main_freme.pack(padx=10, pady=10)
 
