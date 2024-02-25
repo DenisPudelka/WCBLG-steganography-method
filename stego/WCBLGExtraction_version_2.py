@@ -5,7 +5,7 @@ import math
 from stego.Utils import *
 
 class WCBLGExtraction:
-    def __init__(self, stego_image, key, bs, mul, best_seed, data_len, eng, use_iwt, progress_callback=None):
+    def __init__(self, stego_image, key, bs, mul, best_seed, data_len, eng, progress_callback=None):
         self.stego_image = stego_image
         self.key = key
         self.bs = bs
@@ -13,7 +13,6 @@ class WCBLGExtraction:
         self.best_seed = best_seed
         self.data_len = data_len
         self.eng = eng
-        self.use_iwt = use_iwt
         self.m, self.n = self.stego_image.shape
         self.max_capacity_per_subband = int(self.m * self.n / (4 * self.mul))
         self.data_bin_HH = None
@@ -43,30 +42,30 @@ class WCBLGExtraction:
         block_number = self.NumRows * self.NumCols
 
         if self.data_len <= self.max_capacity_per_subband:
-            self.data_bin_HH = np.zeros(self.data_len, dtype=int)
+            self.data_bin_HH = np.zeros(self.data_len)
             self.len_data_HH = self.data_len
             self.len_data_HH_block = self.len_data_HH // block_number
             return True
         if self.data_len <= 2 * self.max_capacity_per_subband:
             self.len_data_HH = self.max_capacity_per_subband
-            self.data_bin_HH = np.zeros(self.len_data_HH, dtype=int)
+            self.data_bin_HH = np.zeros(self.len_data_HH)
             self.len_data_HH_block = self.len_data_HH // block_number
 
             self.len_data_HL = self.data_len - self.max_capacity_per_subband
-            self.data_bin_HL = np.zeros(self.len_data_HL, dtype=int)
+            self.data_bin_HL = np.zeros(self.len_data_HL)
             self.len_data_HL_block = self.len_data_HL // block_number
 
             return True
         self.len_data_HH = self.max_capacity_per_subband
-        self.data_bin_HH = np.zeros(self.len_data_HH, dtype=int)
+        self.data_bin_HH = np.zeros(self.len_data_HH)
         self.len_data_HH_block = self.len_data_HH // block_number
 
         self.len_data_HL = self.max_capacity_per_subband
-        self.data_bin_HL = np.zeros(self.len_data_HL, dtype=int)
+        self.data_bin_HL = np.zeros(self.len_data_HL)
         self.len_data_HL_block = self.len_data_HL // block_number
 
         self.len_data_LH = self.data_len - 2 * self.max_capacity_per_subband
-        self.data_bin_LH = np.zeros(self.len_data_LH, dtype=int)
+        self.data_bin_LH = np.zeros(self.len_data_LH)
         self.len_data_LH_block = self.len_data_LH // block_number
         return True
 
@@ -79,10 +78,8 @@ class WCBLGExtraction:
                 stego_k = self.getSubBl(i, j)
 
                 # Wavelet transformation
-                if self.use_iwt:
-                    LL, LHS, HLS, HHS = IWT_version_2(stego_k, self.eng)
-                else:
-                    LL, LHS, HLS, HHS = DWT_version_2(stego_k, self.eng)
+                LL, LHS, HLS, HHS = IWT_version_2(stego_k, self.eng)
+
 
                 # Selection of Embeding Location
                 can_loc_HH = self.selEmbLoc(HHS, self.len_data_HH_block)
@@ -99,7 +96,7 @@ class WCBLGExtraction:
                     data_k_LH = self.extraction(k, LHS, can_loc_LH, self.len_data_LH_block)
                     self.setSubBl(k, data_k_LH, self.len_data_LH_block, self.data_bin_LH)
 
-                if self.progress_callback:
+                if self.progress_callback is not None:
                     self.progress_callback(k)
                 k += 1
 
@@ -131,7 +128,7 @@ class WCBLGExtraction:
 
         n, m = subband_s.shape
 
-        subband_s_prim = np.zeros((n, m), dtype=int)
+        subband_s_prim = np.zeros((n, m))
         for i, item in enumerate(subband_s):
             for j, num in enumerate(item):
                 r = random.random()
@@ -143,7 +140,7 @@ class WCBLGExtraction:
                         subband_s_prim[i, j] = num_int + 1
                     else:
                         subband_s_prim[i, j] = num_int - 1
-        edges = np.zeros((n, m), dtype=int)
+        edges = np.zeros((n, m))
         for i in range(n):
             for j in range(m):
                 for x in range(-1, 2):
@@ -175,7 +172,7 @@ class WCBLGExtraction:
         return can_loc
 
     def extraction(self, k, subband_s, can_loc, len_data_subband):
-        data_k = np.zeros(len_data_subband, dtype=int)
+        data_k = np.zeros(len_data_subband)
         best_seed_k = self.best_seed[k - 1]
 
         seed(int(best_seed_k))
