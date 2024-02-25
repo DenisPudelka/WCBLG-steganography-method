@@ -13,6 +13,7 @@ class EmbedMode:
         self.image_path = ''
         self.message_path = ''
         self.window = tk.Toplevel()
+        self.embedding_params = None
         self.window.geometry("500x700")
         self.window.resizable(True, False)
         self.window.title("Embed Mode")
@@ -148,9 +149,6 @@ class EmbedMode:
         pm = float(self.mutation_entry.get())
         epoch = int(self.epoch_entry.get())
 
-        # hardcoded to always use IWT transformation
-        use_iwt = True
-
         # read image
         image_original = tifffile.imread('original_images/' + self.image_path)
 
@@ -158,7 +156,7 @@ class EmbedMode:
         cover_image = color_to_gray_matlab(image_original, self.eng)
 
         # convert image to different datatype
-        cover_image = convert_image_to_datatype_matlab(cover_image, "uint16", self.eng)
+        cover_image = convert_image_to_datatype_matlab(cover_image, "uint8", self.eng)
 
         # read message
         data = read_message('message/' + self.message_path)
@@ -169,14 +167,14 @@ class EmbedMode:
         self.show_progress_window(total_iterations)
 
         # preparing data for method run_embedding that runs on separate thread
-        self.embedding_params = (key, bs, mul, pop_size, pc, pm, epoch, use_iwt, cover_image, data)
+        self.embedding_params = (key, bs, mul, pop_size, pc, pm, epoch, cover_image, data)
 
     def run_embedding(self):
         # This method runs in a separate thread and contains the embedding logic
-        key, bs, mul, pop_size, pc, pm, epoch, use_iwt, cover_image, data = self.embedding_params
+        key, bs, mul, pop_size, pc, pm, epoch, cover_image, data = self.embedding_params
 
         try:
-            wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, bs, mul, pop_size, pc, pm, epoch, self.eng, use_iwt, progress_callback=self.update_progress)
+            wcblgEmbedding = WCBLGAlgorithm(cover_image, data, key, bs, mul, pop_size, pc, pm, epoch, self.eng, progress_callback=self.update_progress)
             if not wcblgEmbedding.prepare_algorithm():
                 print("embedding went wrong")
             bestSeeds, stego_image = wcblgEmbedding.wcblg()
