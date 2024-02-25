@@ -8,7 +8,7 @@ from stego.GeneticAlgorithm_version_2 import GeneticAlgorithm
 
 
 class WCBLGAlgorithm:
-    def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch, eng, use_iwt, progress_callback=None):
+    def __init__(self, cover_path, data, key, BS, mul, n_pop, pc, pm, epoch, eng, progress_callback=None):
         self.cover_image = cover_path
         self.stego_image = None
         self.data = data
@@ -25,7 +25,6 @@ class WCBLGAlgorithm:
         self.HH = None
         self.cover_k = None
         self.eng = eng
-        self.use_iwt = use_iwt
         self.m, self.n = self.cover_image.shape
         self.max_capacity_per_subband = int(self.m * self.n / (4 * self.mul))
         self.data_bin_HH = None  # binary data for HH subband
@@ -50,7 +49,7 @@ class WCBLGAlgorithm:
     def fill_data_for_block_number(self, data_bin, data_len): # in extraction erase last fill_data_len
         block_number = self.NumRows * self.NumCols
         remainder = data_len % block_number
-        if remainder ==0:
+        if remainder == 0:
             return data_bin, data_len
         fill_data_len = block_number - remainder
         data_len += fill_data_len
@@ -68,13 +67,6 @@ class WCBLGAlgorithm:
         self.stego_image = np.zeros_like(self.cover_image, dtype=self.cover_image.dtype)
         block_number = self.NumRows * self.NumCols
 
-        # if numbers are not divisible , reminder will be lost which means part of message
-        # is not embeded, or we fill message with spaces
-        # if data_len % block_number != 0:
-        # return False
-
-        # self.len_data = data_len // block_number
-
         if data_len <= self.max_capacity_per_subband:
             # if not dividible
             self.data_bin_HH = data_bin
@@ -90,7 +82,6 @@ class WCBLGAlgorithm:
                 return False
             self.data_bin_HL = data_bin[self.max_capacity_per_subband:]
             self.len_data_HL = data_len - self.max_capacity_per_subband
-            #if image size and block size are nicely choosen this is not neccesery
             self.data_bin_HL, self.len_data_HL = self.fill_data_for_block_number(self.data_bin_HL, self.len_data_HL)
             self.len_data_HL_block = self.len_data_HL // block_number
             if self.len_data_HL % block_number != 0:
@@ -130,10 +121,11 @@ class WCBLGAlgorithm:
                 self.GetSubBlCoverK(i, j)
 
                 # DWT or IWT transformation
-                if self.use_iwt:
-                    self.LL, self.LH, self.HL, self.HH = IWT_version_2(self.cover_k, self.eng)
-                else:
-                    self.LL, self.LH, self.HL, self.HH = DWT_version_2(self.cover_k, self.eng)
+                self.LL, self.LH, self.HL, self.HH = IWT_version_2(self.cover_k, self.eng)
+                self.HH = self.HH.astype(int)
+                self.HL = self.HL.astype(int)
+                self.LH = self.LH.astype(int)
+                self.LL = self.LL.astype(int)
 
                 HLS = self.HL
                 LHS = self.LH
@@ -161,28 +153,25 @@ class WCBLGAlgorithm:
                 genericAlgorithm = GeneticAlgorithm(self.n_pop, self.pc, self.pm, self.epoch, can_loc_HH, can_loc_HL,
                                                     can_loc_LH, self.cover_k, self.LL, self.LH, self.HL, self.HH,
                                                     HH_prim, HL_prim, LH_prim, data_k_HH, data_k_HL, data_k_LH,
-                                                    self.mul, self.key, HH_keys, HL_keys, LH_keys, self.eng,
-                                                    self.use_iwt)
+                                                    self.mul, self.key, HH_keys, HL_keys, LH_keys, self.eng)
                 bestseedk = genericAlgorithm.findBestKey()
                 BestSeeds.append(bestseedk)
 
                 # Data embeding
-                HHS = embedding(self.HH, HH_prim, can_loc_HH, bestseedk, data_k_HH, self.mul, HH_keys, self.use_iwt)
+                HHS = embedding(self.HH, HH_prim, can_loc_HH, bestseedk, data_k_HH, self.mul, HH_keys)
                 if data_k_HL is not None:
-                    HLS = embedding(self.HL, HL_prim, can_loc_HL, bestseedk, data_k_HL, self.mul, HL_keys, self.use_iwt)
+                    HLS = embedding(self.HL, HL_prim, can_loc_HL, bestseedk, data_k_HL, self.mul, HL_keys)
                 if data_k_LH is not None:
-                    LHS = embedding(self.LH, LH_prim, can_loc_LH, bestseedk, data_k_LH, self.mul, LH_keys, self.use_iwt)
+                    LHS = embedding(self.LH, LH_prim, can_loc_LH, bestseedk, data_k_LH, self.mul, LH_keys)
 
                 # IDWT or IIWT transformation
-                if self.use_iwt:
-                    stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
-                else:
-                    stego_k = IDWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
+
+                stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
 
                 # Putting blocks together
                 self.SetSubBl(stego_k, i, j)
 
-                if self.progress_callback:
+                if self.progress_callback is not None:
                     self.progress_callback(k)
 
                 print('Iteracija: ', k)
@@ -191,10 +180,6 @@ class WCBLGAlgorithm:
 
         return BestSeeds, self.stego_image
 
-    # Update progress bar method
-    def update_progress_bar(self, increment):
-        self.progress["value"] += increment
-        self.window.update_idletasks()
 
     def SelEmbLocForSubband(self, subband, len_data_block):
         seed(self.key)
