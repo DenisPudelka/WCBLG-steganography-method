@@ -6,7 +6,7 @@ from stego.Utils import *
 
 
 class GeneticAlgorithm:
-    def __init__(self, n_pop, pc, pm, epoch, can_loc_HH, can_loc_HL, can_loc_LH, cover_k, LL, LH, HL, HH,  HHprim, HLprim, LHprim, data_k_HH, data_k_HL, data_k_LH, mul, key, HH_keys, HL_keys, LH_keys, eng, use_iwt):
+    def __init__(self, n_pop, pc, pm, epoch, can_loc_HH, can_loc_HL, can_loc_LH, cover_k, LL, LH, HL, HH,  HHprim, HLprim, LHprim, data_k_HH, data_k_HL, data_k_LH, mul, key, HH_keys, HL_keys, LH_keys, eng):
         self.n_pop = n_pop
         self.pc = pc
         self.pm = pm
@@ -32,7 +32,6 @@ class GeneticAlgorithm:
         self.HL_keys = HL_keys
         self.LH_keys = LH_keys
         self.eng = eng
-        self.use_iwt = use_iwt
 
     def findBestKey(self):
 
@@ -99,18 +98,16 @@ class GeneticAlgorithm:
             pop_dict[chromo] = self.fitness(chromo)
 
     def fitness(self, chromo):
-        HHS = embedding(self.HH, self.HHprim, self.can_loc_HH, chromo, self.data_k_HH, self.mul, self.HH_keys, self.use_iwt)
+        HHS = embedding(self.HH, self.HHprim, self.can_loc_HH, chromo, self.data_k_HH, self.mul, self.HH_keys)
         HLS = self.HL
         LHS = self.LH
         if self.HLprim is not None:
-            HLS = embedding(self.HL, self.HLprim, self.can_loc_HL, chromo, self.data_k_HL, self.mul, self.HL_keys, self.use_iwt)
+            HLS = embedding(self.HL, self.HLprim, self.can_loc_HL, chromo, self.data_k_HL, self.mul, self.HL_keys)
         if self.LHprim is not None:
-            LHS = embedding(self.LH, self.LHprim, self.can_loc_LH, chromo, self.data_k_LH, self.mul, self.LH_keys, self.use_iwt)
-        if self.use_iwt:
-            stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
-        else:
-            stego_k = IDWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
+            LHS = embedding(self.LH, self.LHprim, self.can_loc_LH, chromo, self.data_k_LH, self.mul, self.LH_keys)
+        stego_k = IIWT_version_2(self.LL, LHS, HLS, HHS, self.eng)
         return self.picture_fitness(self.cover_k, stego_k)
+
 
     def picture_fitness(self, cover, stego_image):
         m, n = cover.shape
