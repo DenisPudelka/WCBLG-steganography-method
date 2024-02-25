@@ -1,4 +1,3 @@
-import pywt
 import numpy as np
 import struct
 import os
@@ -14,21 +13,6 @@ def bin_to_string(binary):
     for item in binary:
         binary_str += str(int(item))
     return ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
-
-
-def float_to_bin(num):
-    return struct.unpack('>Q', struct.pack('>d', num))[0]
-
-
-def bin_to_float(binary):
-    return struct.unpack('>d', struct.pack('>Q', binary))[0]
-
-
-def modify_lsb_of_float(num, bit):
-    binary = float_to_bin(num)
-    if (binary & 1) != bit:
-        binary ^= 1
-    return bin_to_float(binary)
 
 
 def color_to_gray_matlab(image, eng):
@@ -113,40 +97,6 @@ def read_message(file_path):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
-
-
-def DWT_version_2(coverk, eng):
-    # we send image that can be type of double, single, uint8, probably also (uint16)
-    coverk_contiguous = np.ascontiguousarray(coverk)
-    dwt_result = eng.perform_dwt(coverk_contiguous, 'bior1.1')
-    # this returns me always double
-    LL = np.array(dwt_result[0])
-    LH = np.array(dwt_result[1])
-    HL = np.array(dwt_result[2])
-    HH = np.array(dwt_result[3])
-    return LL, LH, HL, HH
-
-
-def DWT(coverk):
-    coeffs2 = pywt.dwt2(coverk, 'db2')
-    LL, (LH, HL, HH) = coeffs2
-    return LL, LH, HL, HH
-
-
-def IDWT_version_2(LL, LH, HL, HH, eng):
-    LL_contiguous = np.ascontiguousarray(LL)
-    LH_contiguous = np.ascontiguousarray(LH)
-    HL_contiguous = np.ascontiguousarray(HL)
-    HH_contiguous = np.ascontiguousarray(HH)
-    idwt_result = eng.perform_idwt(LL_contiguous, LH_contiguous, HL_contiguous, HH_contiguous, 'bior1.1')
-    reconstructed_image = np.array(idwt_result)
-    return reconstructed_image
-
-
-def IDWT(LL, LH, HL, HH):
-    coeffs = (LL, (LH, HL, HH))
-    idwt_result = pywt.idwt2(coeffs, 'db2')
-    return idwt_result
 
 
 def IWT_version_2(coverk, eng):
