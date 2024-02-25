@@ -12,6 +12,7 @@ class ExtractMode:
         self.eng = eng
         self.image_path = ''
         self.bestSeeds_path = ''
+        self.extracting_params = None
         self.window = tk.Toplevel()
         self.window.geometry("500x700")
         self.window.resizable(False, False)
@@ -132,8 +133,6 @@ class ExtractMode:
         mul = float(self.mul_entry.get())
         len_data = int(self.len_embedded_data_entry.get())
 
-        use_iwt = True
-
         stego_image = tifffile.imread("stego_image/" + self.image_path)
 
         # read best seeds
@@ -145,14 +144,14 @@ class ExtractMode:
 
         self.show_progress_window(total_iterations)
 
-        self.extracting_params = (key, bs, mul, use_iwt, stego_image, bestSeeds, data_len)
+        self.extracting_params = (key, bs, mul, stego_image, bestSeeds, data_len)
 
     def run_extracction(self):
         # This method runs in a separate thread and contains the embedding logic
-        key, bs, mul, use_iwt, stego_image, bestSeeds, data_len = self.extracting_params
+        key, bs, mul, stego_image, bestSeeds, data_len = self.extracting_params
 
         try:
-            wcblgExtraction = WCBLGExtraction(stego_image, key, bs, mul, bestSeeds, data_len, self.eng, use_iwt, progress_callback=self.update_progress)
+            wcblgExtraction = WCBLGExtraction(stego_image, key, bs, mul, bestSeeds, data_len, self.eng, progress_callback=self.update_progress)
             wcblgExtraction.prepare_algorithm()
             hidden_message = wcblgExtraction.extract_data()
 
