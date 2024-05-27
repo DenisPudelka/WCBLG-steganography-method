@@ -1,0 +1,7 @@
+F-Statistic: 0.09016960906892998, P-Value: 0.9652396975460952
+
+An F-statistic of approximately 0.090 and a P-value of approximately 0.965 suggests that the differences in PSNR values between the different "mul" parameters are not statistically significant at the common significance level of 0.05. In other words, there isn't enough statistical evidence to conclude that different "mul" parameters lead to different average PSNR values.
+
+When the P-value is greater than the significance level (usually 0.05), you fail to reject the null hypothesis. This means that based on the data you analyzed, the variation in PSNR values can be attributed to random chance rather than differences in the "mul" parameters.
+
+What this implies for your analysis is that the choice of "mul" parameter does not significantly affect the PSNR and hence, you may select the "mul" parameter based on other criteria such as computational efficiency, ease of implementation, or other factors relevant to your specific context or application.

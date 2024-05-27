@@ -1,0 +1,29 @@
+F-Statistic: 1117.6365086919334, P-Value: 6.025353168346848e-14
+Multiple Comparison of Means - Tukey HSD, FWER=0.05 
+====================================================
+group1 group2 meandiff p-adj   lower   upper  reject
+----------------------------------------------------
+    64    128  -0.7161    0.0 -0.7827 -0.6496   True
+    64    256  -1.0269    0.0 -1.0988  -0.955   True
+    64    512  -1.2002    0.0 -1.2668 -1.1337   True
+   128    256  -0.3107    0.0 -0.3826 -0.2389   True
+   128    512  -0.4841    0.0 -0.5506 -0.4176   True
+   256    512  -0.1734 0.0001 -0.2452 -0.1015   True
+----------------------------------------------------
+
+
+The results you've obtained from the ANOVA and the Tukey HSD post-hoc test are very clear:
+
+F-Statistic: The F-Statistic of 1117.6365 is extremely high, which indicates that there is a statistically significant difference among the mean PSNR values for different block sizes.
+
+P-Value: The P-value is extremely small (6.025e-14), far below the common alpha level of 0.05, which reinforces the conclusion that there is a significant difference in means between the groups.
+
+Tukey HSD Results: The Tukey HSD (Honestly Significant Difference) post-hoc test provides a pairwise comparison between the means of each group (different block sizes). According to the results, every single pair of block sizes shows a statistically significant difference in their mean PSNR values (reject column is True for all comparisons). The meandiff column shows the difference in means between the groups, and all are non-zero, further supporting the presence of significant differences.
+
+Here's what this means in terms of your data:
+
+The performance in terms of PSNR varies significantly with the block size. Specifically, as the block size decreases from 512 to 64, the PSNR increases, which suggests that smaller block sizes result in better image quality (higher PSNR values).
+
+The Tukey HSD test's pairwise comparisons confirm that all differences between the block sizes are statistically significant, and not due to random chance.
+
+In summary, you can confidently conclude that block size has a substantial impact on the performance of the stego program as measured by PSNR. The smaller block sizes consistently provide better PSNR values, which can be a key consideration when optimizing for image quality in your use case.
