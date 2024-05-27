@@ -1,0 +1,12 @@
+embedding_time_64_Lorem Ipsum 6826 for mul 1,2.txt: 1348.5962370999623
+extraction_time_64_Lorem Ipsum 6826 for mul 1,2.txt: 1.7415510999853723
+
+embedding_time_64_Lorem Ipsum 13652 for mul 1,2.txt: 1560.9262838999857
+extraction_time_64_Lorem Ipsum 13652 for mul 1,2.txt: 2.7531916999723762
+
+embedding_time_64_Lorem Ipsum 20478 for mul 1,2.txt: 1863.370662100031
+extraction_time_64_Lorem Ipsum 20478 for mul 1,2.txt: 3.2867194999707863
+
+embedding_time_64_Lorem Ipsum 6826 for mul 1,2.txt: 1350.9988591999863
+extraction_time_64_Lorem Ipsum 6826 for mul 1,2.txt: 1.2047480000182986
+
