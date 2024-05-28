@@ -2,6 +2,9 @@ from random import *
 import random
 from random import seed
 import math
+
+import numpy as np
+
 from stego.Utils import *
 
 class WCBLGExtraction:
@@ -27,13 +30,34 @@ class WCBLGExtraction:
         self.NumRows = self.m // self.bs
         self.NumCols = self.n // self.bs
         self.progress_callback = progress_callback
+        self.num_filled_binary = 0
 
     def adjust_max_capacity_per_subband(self):
+        """
+        Adjusts the maximum capacity per subband by reducing it to the nearest multiple of the number of blocks.
+        This ensures that the capacity is a perfect fit for the number of blocks available in the image.
+        """
         block_number = self.NumRows * self.NumCols
         remainder = self.max_capacity_per_subband % block_number
         self.max_capacity_per_subband -= remainder
 
+    def fill_data_for_block_number(self, data_bin, data_len):
+        """Adjusts the length of binary data to ensure it perfectly fits into the blocks available."""
+        block_number = self.NumRows * self.NumCols
+        remainder = data_len % block_number
+        if remainder == 0:
+            return data_bin, data_len
+        self.num_filled_binary = block_number - remainder
+        data_len += self.num_filled_binary
+        zeros_to_add = np.zeros(self.num_filled_binary, dtype=data_bin.dtype)
+        data_bin = np.concatenate((data_bin, zeros_to_add))
+        return data_bin, data_len
+
     def prepare_algorithm(self):
+        """
+        Prepares the steganography algorithm for execution. This includes converting the data to binary,
+        adjusting for maximum capacity, and splitting the data among the different subbands.
+        """
         self.adjust_max_capacity_per_subband()
         if self.data_len > 3 * self.max_capacity_per_subband:
             print("not enough space in picture")
@@ -44,6 +68,7 @@ class WCBLGExtraction:
         if self.data_len <= self.max_capacity_per_subband:
             self.data_bin_HH = np.zeros(self.data_len)
             self.len_data_HH = self.data_len
+            self.data_bin_HH, self.len_data_HH = self.fill_data_for_block_number(self.data_bin_HH, self.len_data_HH)
             self.len_data_HH_block = self.len_data_HH // block_number
             return True
         if self.data_len <= 2 * self.max_capacity_per_subband:
@@ -53,6 +78,7 @@ class WCBLGExtraction:
 
             self.len_data_HL = self.data_len - self.max_capacity_per_subband
             self.data_bin_HL = np.zeros(self.len_data_HL)
+            self.data_bin_HL, self.len_data_HL = self.fill_data_for_block_number(self.data_bin_HL, self.len_data_HL)
             self.len_data_HL_block = self.len_data_HL // block_number
 
             return True
@@ -66,26 +92,31 @@ class WCBLGExtraction:
 
         self.len_data_LH = self.data_len - 2 * self.max_capacity_per_subband
         self.data_bin_LH = np.zeros(self.len_data_LH)
+        self.data_bin_LH, self.len_data_LH = self.fill_data_for_block_number(self.data_bin_LH, self.len_data_LH)
         self.len_data_LH_block = self.len_data_LH // block_number
         return True
 
     def extract_data(self):
-
+        """
+        This method performs extraction of embedded data from the stego image, processing each block for
+        data retrieval and combining results into the final message.
+        """
         k = 1
         for i in range(self.NumRows):
             for j in range(self.NumCols):
-                # Get sub block
+                # Extraction of current block
                 stego_k = self.getSubBl(i, j)
 
-                # Wavelet transformation
+                # Performing IWT transformation
                 LL, LHS, HLS, HHS = IWT_version_2(stego_k, self.eng)
 
 
-                # Selection of Embeding Location
+                # Selection, extraction from HH subband
                 can_loc_HH = self.selEmbLoc(HHS, self.len_data_HH_block)
                 data_k_HH = self.extraction(k, HHS, can_loc_HH, self.len_data_HH_block)
                 self.setSubBl(k, data_k_HH, self.len_data_HH_block, self.data_bin_HH)
 
+                # Selection, extraction from HL and LH if they were used.
                 if self.data_bin_HL is not None:
                     can_loc_HL = self.selEmbLoc(HLS, self.len_data_HL_block)
                     data_k_HL = self.extraction(k, HLS, can_loc_HL, self.len_data_HL_block)
@@ -96,10 +127,12 @@ class WCBLGExtraction:
                     data_k_LH = self.extraction(k, LHS, can_loc_LH, self.len_data_LH_block)
                     self.setSubBl(k, data_k_LH, self.len_data_LH_block, self.data_bin_LH)
 
+                # Optionally, update progress through a callback
                 if self.progress_callback is not None:
                     self.progress_callback(k)
                 k += 1
 
+        # Combine the data from different subbands
         data = self.data_bin_HH
         if self.data_bin_HL is not None:
             data = np.append(data, self.data_bin_HL)
@@ -107,6 +140,11 @@ class WCBLGExtraction:
         if self.data_bin_LH is not None:
             data = np.append(data, self.data_bin_LH)
 
+        # Remove padding bits if any were added to fill the binary data to fit block sizes
+        if self.num_filled_binary > 0:
+            data = data[:-self.num_filled_binary]
+
+        # Convert binary data to string to form the final extracted message
         message = bin_to_string(data)
 
         return message
@@ -124,6 +162,7 @@ class WCBLGExtraction:
         return self.stego_image[start_i: end_i, start_j: end_j]
 
     def selEmbLoc(self, subband_s, len_data_subband):
+        """Selects the best candidate locations for embedding data within a subband based on edge values."""
         seed(self.key)
 
         n, m = subband_s.shape
@@ -172,6 +211,7 @@ class WCBLGExtraction:
         return can_loc
 
     def extraction(self, k, subband_s, can_loc, len_data_subband):
+        """Extracts data from a specified subband of the stego-image using predetermined locations."""
         data_k = np.zeros(len_data_subband)
         best_seed_k = self.best_seed[k - 1]
 
